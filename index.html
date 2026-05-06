@@ -1,0 +1,2195 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Renderizador 3D do Wolfenstein 3D</title>
+<script src="deck-stage.js"></script>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --bg-alt: #ffffff;
+    --ink: #1f2937;
+    --ink-soft: #4b5563;
+    --navy: #1a1a2e;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --orange: #f59e0b;
+    --rule: #e5e7eb;
+
+    --type-title: 64px;
+    --type-subtitle: 40px;
+    --type-body: 28px;
+    --type-small: 24px;
+    --type-mega: 96px;
+
+    --pad-top: 96px;
+    --pad-bottom: 80px;
+    --pad-x: 100px;
+    --gap-title: 48px;
+    --gap-item: 24px;
+
+    --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --shadow-card: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-deep: 0 24px 48px rgba(15, 23, 42, 0.18), 0 8px 16px rgba(15, 23, 42, 0.10);
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  html, body { margin: 0; padding: 0; background: #0b0d12; }
+  body { font-family: var(--font-sans); color: var(--ink); }
+
+  deck-stage section {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .slide-num {
+    position: absolute;
+    top: 48px;
+    right: 64px;
+    font-family: var(--font-mono);
+    font-size: 20px;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--blue);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 24px;
+    font-weight: 500;
+  }
+
+  h1.title {
+    font-size: var(--type-title);
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 var(--gap-title);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    max-width: 1400px;
+  }
+
+  h2.subtitle {
+    font-size: var(--type-subtitle);
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  ul.bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-item);
+  }
+  ul.bullets li {
+    font-size: var(--type-body);
+    color: var(--ink);
+    line-height: 1.35;
+    padding-left: 56px;
+    position: relative;
+    font-weight: 400;
+  }
+  ul.bullets li .marker {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    color: var(--blue);
+    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 26px;
+  }
+  ul.bullets li b { font-weight: 600; color: var(--navy); }
+
+  .img-slot {
+    border: 2px dashed var(--blue);
+    background: var(--blue-soft);
+    padding: 16px 22px;
+    border-radius: 10px;
+    color: var(--blue);
+    font-family: var(--font-mono);
+    font-size: 18px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-sizing: border-box;
+  }
+  .img-slot .label { font-weight: 600; letter-spacing: 0.04em; }
+  .img-slot .caption { color: #1d4ed8; opacity: 0.85; }
+  .img-slot .placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #93c5fd;
+    font-size: 14px;
+    text-align: center;
+    border-top: 1px dashed #bfdbfe;
+    margin-top: 6px;
+    padding-top: 10px;
+  }
+
+  /* ===== Layout helpers ===== */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 80px;
+    flex: 1;
+    align-items: start;
+  }
+  .body-grid.flip { grid-template-columns: 0.9fr 1.1fr; }
+  .stage-3d {
+    perspective: 1600px;
+    perspective-origin: 50% 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 540px;
+    transform-style: preserve-3d;
+  }
+
+  .footer-bar {
+    position: absolute;
+    bottom: 32px;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+  }
+  .footer-bar .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+    margin: 0 24px;
+  }
+
+  /* ===== SLIDE 1 — Capa ===== */
+  .cover {
+    background: var(--bg-alt);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .cover .eyebrow { color: var(--orange); }
+  .cover h1 {
+    font-size: 104px;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin: 0 0 32px;
+    max-width: 1500px;
+  }
+  .cover h2 {
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin: 0 0 80px;
+  }
+  .cover .meta {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--ink-soft);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 64px;
+  }
+  .cover .stage-3d { min-height: 380px; margin-bottom: 32px; }
+
+  /* ===== Cube (slide 1) ===== */
+  .cube {
+    width: 280px;
+    height: 280px;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: cubeSpin 16s linear infinite;
+  }
+  .cube .face {
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.35), 0 0 0 2px rgba(0,0,0,0.15);
+  }
+  .brick {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.10), rgba(0,0,0,0.20)),
+      repeating-linear-gradient(0deg,
+        #7a3a1f 0 24px,
+        #2a1208 24px 26px),
+      repeating-linear-gradient(90deg,
+        transparent 0 60px,
+        rgba(0,0,0,0.55) 60px 62px);
+    background-blend-mode: normal, multiply, normal;
+  }
+  .brick.alt {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.10), rgba(0,0,0,0.20)),
+      repeating-linear-gradient(0deg,
+        #8a4426 0 24px,
+        #2a1208 24px 26px),
+      repeating-linear-gradient(90deg,
+        transparent 30px 90px,
+        rgba(0,0,0,0.55) 90px 92px);
+  }
+  .cube .f-front  { transform: translateZ(140px); }
+  .cube .f-back   { transform: rotateY(180deg) translateZ(140px); }
+  .cube .f-right  { transform: rotateY(90deg)  translateZ(140px); }
+  .cube .f-left   { transform: rotateY(-90deg) translateZ(140px); }
+  .cube .f-top    { transform: rotateX(90deg)  translateZ(140px); background: linear-gradient(180deg,#3a3a4a,#1a1a2e); }
+  .cube .f-bottom { transform: rotateX(-90deg) translateZ(140px); background: linear-gradient(0deg,#3a3a4a,#0a0a14); }
+
+  @keyframes cubeSpin {
+    from { transform: rotateX(-18deg) rotateY(0deg); }
+    to   { transform: rotateX(-18deg) rotateY(360deg); }
+  }
+
+  /* ===== Fisheye rays (slide 2) ===== */
+  .fisheye-stage {
+    width: 520px;
+    height: 480px;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(50deg) rotateZ(-8deg);
+    animation: floaty 6s ease-in-out infinite;
+  }
+  @keyframes floaty {
+    0%,100% { transform: rotateX(50deg) rotateZ(-8deg) translateZ(0); }
+    50%     { transform: rotateX(50deg) rotateZ(-8deg) translateZ(18px); }
+  }
+  .floor-grid {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(#dbeafe33, #dbeafe33),
+      repeating-linear-gradient(0deg, #cbd5e1 0 1px, transparent 1px 60px),
+      repeating-linear-gradient(90deg, #cbd5e1 0 1px, transparent 1px 60px);
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+  }
+  .player-dot {
+    position: absolute;
+    left: 50%; bottom: 40px;
+    width: 22px; height: 22px;
+    background: var(--navy);
+    border-radius: 50%;
+    transform: translateX(-50%) translateZ(20px);
+    box-shadow: 0 0 0 6px rgba(26,26,46,0.15);
+  }
+  .ray {
+    position: absolute;
+    left: 50%; bottom: 50px;
+    width: 4px;
+    transform-origin: bottom center;
+    border-radius: 2px;
+  }
+  .ray.straight {
+    height: 380px;
+    background: linear-gradient(0deg, var(--blue), rgba(37,99,235,0.1));
+    transform: translateX(-50%) rotate(28deg) translateZ(10px);
+  }
+  .ray.straight.l2 { transform: translateX(-50%) rotate(-28deg) translateZ(10px); }
+  .ray.curved {
+    height: 380px;
+    background: linear-gradient(0deg, var(--orange), rgba(245,158,11,0.1));
+    border-radius: 60% 60% 4px 4px / 30% 30% 4px 4px;
+    transform: translateX(-50%) rotate(50deg) translateZ(8px);
+    opacity: 0.85;
+  }
+  .ray.curved.r2 { transform: translateX(-50%) rotate(-50deg) translateZ(8px); }
+  .legend {
+    position: absolute;
+    bottom: -56px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--ink-soft);
+    transform: rotateX(-50deg) rotateZ(8deg);
+  }
+  .legend .swatch {
+    display: inline-block; width: 14px; height: 14px;
+    border-radius: 3px; margin-right: 8px; vertical-align: -2px;
+  }
+
+  /* ===== Wall columns (slide 3) ===== */
+  .wall-stage {
+    width: 600px; height: 520px;
+    transform-style: preserve-3d;
+    perspective: 1400px;
+    perspective-origin: 50% 60%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .wall {
+    position: relative;
+    width: 560px; height: 360px;
+    transform-style: preserve-3d;
+    transform: rotateX(8deg) rotateY(-14deg);
+    display: flex;
+    box-shadow: var(--shadow-deep);
+    border-radius: 4px;
+    overflow: hidden;
+    animation: floaty 7s ease-in-out infinite;
+  }
+  .wall .col {
+    flex: 1;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.25)),
+      repeating-linear-gradient(0deg, #94a3b8 0 14px, #64748b 14px 16px);
+    border-right: 1px solid rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .wall .col.hi {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.30)),
+      repeating-linear-gradient(0deg, #fbbf24 0 14px, #b45309 14px 16px);
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.35), 0 0 12px rgba(245,158,11,0.5);
+    z-index: 2;
+  }
+  .wall .col.hi.b {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.30)),
+      repeating-linear-gradient(0deg, #60a5fa 0 14px, #1e3a8a 14px 16px);
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.35), 0 0 12px rgba(37,99,235,0.5);
+  }
+  .wall .col.hi.c {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.30)),
+      repeating-linear-gradient(0deg, #34d399 0 14px, #064e3b 14px 16px);
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.35), 0 0 12px rgba(16,185,129,0.5);
+  }
+  .col-tag {
+    position: absolute;
+    top: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: white;
+    white-space: nowrap;
+  }
+  .col-tag::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: -6px;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid currentColor;
+  }
+  .col-tag.a { background: #b45309; }
+  .col-tag.a::after { color: #b45309; }
+  .col-tag.b { background: #1e40af; }
+  .col-tag.b::after { color: #1e40af; }
+  .col-tag.c { background: #047857; }
+  .col-tag.c::after { color: #047857; }
+  .wall-caption {
+    margin-top: 36px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--ink);
+    background: white;
+    padding: 14px 24px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+    border-left: 4px solid var(--blue);
+  }
+  .wall-caption b { color: var(--blue); font-weight: 600; }
+
+  /* ===== Compiled scalers stack (slide 4) — REWORKED ===== */
+  .scaler-stage {
+    width: 720px; height: 620px;
+    transform-style: preserve-3d;
+    perspective: 1400px;
+    perspective-origin: 50% 40%;
+    position: relative;
+  }
+  .scaler-deck {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 1px; height: 1px;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(62deg) rotateZ(-26deg);
+    animation: floaty 8s ease-in-out infinite;
+  }
+  .chip {
+    position: absolute;
+    left: -190px; top: -32px;
+    width: 380px; height: 64px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow:
+      0 0 0 1px #cbd5e1 inset,
+      0 10px 0 #94a3b8,
+      0 14px 22px rgba(15,23,42,0.22);
+    display: flex; align-items: center; padding: 0 22px; gap: 18px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--navy);
+  }
+  .chip .num {
+    color: var(--blue); font-weight: 700;
+    background: #eff6ff;
+    padding: 4px 10px; border-radius: 4px;
+    letter-spacing: 0.02em;
+  }
+  .chip .ops { color: #64748b; letter-spacing: 0.04em; }
+  .chip.accent {
+    background: linear-gradient(180deg, #fff7d6 0%, #fcd34d 100%);
+    box-shadow:
+      0 0 0 1px #f59e0b inset,
+      0 10px 0 #b45309,
+      0 16px 28px rgba(180,83,9,0.36);
+    z-index: 5;
+  }
+  .chip.accent .num { color: #b45309; background: #fff; }
+  .chip.accent .ops { color: #78350f; font-weight: 600; }
+  .pixel-col {
+    position: absolute;
+    right: -340px; top: -180px;
+    width: 56px; height: 360px;
+    display: flex; flex-direction: column;
+    transform: rotateZ(26deg) rotateX(-62deg) translateZ(80px);
+    box-shadow: 0 0 0 2px #1f2937, 0 18px 30px rgba(0,0,0,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .pixel-col span { flex: 1; display: block; box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25); }
+
+  /* ===== Balance scale (slide 5) — REWORKED ===== */
+  .balance-stage {
+    width: 720px; height: 620px;
+    position: relative;
+    perspective: 1400px;
+    perspective-origin: 50% 35%;
+  }
+  .balance-rig {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(8deg);
+    animation: balanceFloat 6s ease-in-out infinite;
+  }
+  @keyframes balanceFloat {
+    0%, 100% { transform: rotateX(8deg) translateY(0); }
+    50%      { transform: rotateX(8deg) translateY(-10px); }
+  }
+  /* Pivot at top of pillar — both beam and pans rotate together around it */
+  .balance-pivot {
+    position: absolute;
+    left: 50%; top: 130px;
+    width: 0; height: 0;
+    transform: translateX(-50%);
+    transform-style: preserve-3d;
+    animation: tipBeam 5s ease-in-out infinite alternate;
+  }
+  @keyframes tipBeam {
+    from { transform: translateX(-50%) rotateZ(-12deg); }
+    to   { transform: translateX(-50%) rotateZ(-9deg); }
+  }
+  .beam {
+    position: absolute;
+    left: 50%; top: -8px;
+    width: 540px; height: 16px;
+    background: linear-gradient(180deg, #64748b 0%, #334155 50%, #0f172a 100%);
+    transform: translateX(-50%);
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(15,23,42,0.28), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .beam::before, .beam::after {
+    content: ''; position: absolute; top: -4px;
+    width: 24px; height: 24px;
+    background: radial-gradient(circle at 35% 35%, #94a3b8, #1e293b);
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  .beam::before { left: -12px; }
+  .beam::after  { right: -12px; }
+  /* Center fulcrum jewel */
+  .beam-jewel {
+    position: absolute;
+    left: 50%; top: -14px;
+    width: 28px; height: 28px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at 35% 30%, #fcd34d 0%, #f59e0b 60%, #b45309 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #fff, 0 6px 12px rgba(180,83,9,0.4);
+    z-index: 3;
+  }
+  /* Pans hang from beam ends */
+  .pan-arm {
+    position: absolute;
+    top: 0;
+    width: 180px;
+    transform-style: preserve-3d;
+  }
+  .pan-arm.left  { left: -250px; transform: translateX(-50%); }
+  .pan-arm.right { left:  250px; transform: translateX(-50%); }
+  .pan-rope {
+    position: absolute;
+    left: 50%; top: 0;
+    width: 3px; height: 130px;
+    background: linear-gradient(180deg, #475569, #1e293b);
+    transform: translateX(-50%);
+    border-radius: 2px;
+  }
+  .pan-rope::before, .pan-rope::after {
+    content: ''; position: absolute; top: 0;
+    width: 3px; height: 130px;
+    background: linear-gradient(180deg, #475569, #1e293b);
+    border-radius: 2px;
+  }
+  .pan-rope::before { left: -28px; transform: rotateZ(12deg); transform-origin: top; }
+  .pan-rope::after  { left:  28px; transform: rotateZ(-12deg); transform-origin: top; }
+  .pan-plate {
+    position: absolute;
+    left: 50%; top: 130px;
+    width: 200px; height: 22px;
+    transform: translateX(-50%);
+    background:
+      radial-gradient(ellipse at center top, #f1f5f9 0%, #cbd5e1 50%, #64748b 100%);
+    border-radius: 50%;
+    box-shadow:
+      0 8px 0 #334155,
+      0 14px 24px rgba(15,23,42,0.3),
+      inset 0 2px 4px rgba(255,255,255,0.6);
+  }
+  .pan-weight {
+    position: absolute;
+    left: 50%; top: 78px;
+    transform: translateX(-50%);
+    width: 150px;
+    padding: 22px 18px;
+    border-radius: 14px;
+    color: white;
+    text-align: center;
+    font-family: var(--font-mono);
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,0.4) inset,
+      0 14px 0 rgba(0,0,0,0.18),
+      0 22px 32px rgba(15,23,42,0.28);
+    z-index: 2;
+  }
+  .pan-weight .pw-tag {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+  .pan-weight .pw-val {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+    opacity: 0.95;
+  }
+  .pan-weight.ram {
+    background: linear-gradient(160deg, #fbbf24 0%, #f59e0b 60%, #b45309 100%);
+  }
+  .pan-weight.cpu {
+    background: linear-gradient(160deg, #60a5fa 0%, #2563eb 60%, #1e3a8a 100%);
+  }
+  .balance-pillar {
+    position: absolute;
+    left: 50%; top: 130px;
+    width: 18px; height: 360px;
+    background: linear-gradient(90deg, #1e293b 0%, #475569 30%, #1e293b 100%);
+    transform: translateX(-50%);
+    border-radius: 4px 4px 0 0;
+    box-shadow: 4px 0 8px rgba(0,0,0,0.18);
+  }
+  .balance-base {
+    position: absolute;
+    left: 50%; bottom: 60px;
+    width: 280px; height: 30px;
+    background:
+      linear-gradient(180deg, #334155 0%, #0f172a 70%, #000 100%);
+    transform: translateX(-50%);
+    border-radius: 14px;
+    box-shadow:
+      0 12px 24px rgba(15,23,42,0.4),
+      inset 0 2px 0 rgba(255,255,255,0.12);
+  }
+  .balance-base::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: -12px;
+    width: 88%; height: 22px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(15,23,42,0.32), transparent 70%);
+    filter: blur(4px);
+    border-radius: 50%;
+  }
+  /* Floor label captions */
+  .balance-floor {
+    position: absolute;
+    left: 50%; bottom: 16px;
+    transform: translateX(-50%);
+    display: flex; gap: 60px;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--ink-soft);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .balance-floor span b { color: var(--navy); font-size: 18px; }
+
+  /* ===== Deferred batch (slide 6) ===== */
+  .batch-stage {
+    width: 560px; height: 480px;
+    transform-style: preserve-3d;
+    transform: rotateY(-18deg) rotateX(8deg);
+    animation: floaty 7s ease-in-out infinite;
+  }
+  .batch-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 32px;
+  }
+  .batch-row .bcol {
+    width: 44px; height: 280px;
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+  .bcol.b0 { background: linear-gradient(180deg, #fca5a5, #b91c1c); }
+  .bcol.b1 { background: linear-gradient(180deg, #fcd34d, #b45309); }
+  .bcol.b2 { background: linear-gradient(180deg, #86efac, #166534); }
+  .bcol.b3 { background: linear-gradient(180deg, #93c5fd, #1e40af); }
+  .batch-arrow {
+    width: 100%; height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 18px; color: var(--ink-soft);
+    position: relative;
+  }
+  .batch-arrow::before {
+    content: '';
+    position: absolute;
+    left: 8%; right: 8%; top: 50%;
+    height: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+  }
+  .batch-arrow span { background: var(--bg); padding: 0 18px; z-index: 1; position: relative; }
+  .vga-write {
+    width: 360px; height: 80px;
+    margin: 0 auto;
+    background: var(--navy);
+    color: #fcd34d;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== VGA banks (slide 7) ===== */
+  .banks-stage {
+    width: 560px; height: 480px;
+    transform-style: preserve-3d;
+    transform: rotateX(48deg) rotateZ(-14deg);
+    animation: floaty 7s ease-in-out infinite;
+  }
+  .banks-grid {
+    display: grid;
+    grid-template-columns: repeat(16, 32px);
+    gap: 2px;
+    transform-style: preserve-3d;
+  }
+  .banks-grid div {
+    height: 32px;
+    border-radius: 2px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
+  }
+  .banks-grid div[data-b="0"] { background: #ef4444; }
+  .banks-grid div[data-b="1"] { background: #f59e0b; }
+  .banks-grid div[data-b="2"] { background: #10b981; }
+  .banks-grid div[data-b="3"] { background: #2563eb; }
+  .mask-bits {
+    position: absolute;
+    top: -40px; left: 50%;
+    transform: translateX(-50%) translateZ(80px);
+    display: flex; gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 600;
+  }
+  .mask-bits span {
+    width: 44px; height: 44px;
+    background: white;
+    color: var(--navy);
+    border: 2px solid var(--navy);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    animation: bitFlick 2.4s ease-in-out infinite;
+  }
+  .mask-bits span:nth-child(2) { animation-delay: 0.3s; }
+  .mask-bits span:nth-child(3) { animation-delay: 0.6s; }
+  .mask-bits span:nth-child(4) { animation-delay: 0.9s; }
+  @keyframes bitFlick {
+    0%,40%,100% { background: white; color: var(--navy); }
+    50%,80% { background: var(--orange); color: white; border-color: var(--orange); }
+  }
+
+  /* ===== Lit corridor (slide 8) ===== */
+  .corridor-stage {
+    width: 640px; height: 500px;
+    position: relative;
+    transform-style: preserve-3d;
+    perspective: 1100px;
+    perspective-origin: 50% 45%;
+  }
+  .corridor {
+    position: absolute; inset: 0;
+    transform-style: preserve-3d;
+    animation: corrPan 7s ease-in-out infinite alternate;
+  }
+  @keyframes corrPan {
+    from { transform: translateZ(-20px) rotateY(-2deg); }
+    to   { transform: translateZ(20px)  rotateY(2deg); }
+  }
+  .corr-wall {
+    position: absolute;
+    width: 256px; height: 330px;
+    top: 72px;
+    background-size: 60px 8px, 100% 100%;
+    box-shadow: var(--shadow-deep);
+    border: 2px solid rgba(255,255,255,0.18);
+    z-index: 1;
+  }
+  .corr-wall.left {
+    left: 58px;
+    transform: rotateY(55deg);
+    transform-origin: left center;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 30px),
+      linear-gradient(90deg, #111827, #25243d);
+  }
+  .corr-wall.right {
+    right: 58px;
+    transform: rotateY(-55deg);
+    transform-origin: right center;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.16) 0 1px, transparent 1px 30px),
+      linear-gradient(90deg, #c76a04, #f59e0b);
+  }
+  .corr-wall.back {
+    left: 50%; top: 72px;
+    width: 230px;
+    transform: translateX(-50%) translateZ(-210px);
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 30px),
+      linear-gradient(180deg, #2d2d44, #151525);
+  }
+  .corr-wall::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 18px; top: 18px;
+    background: rgba(15,23,42,0.88);
+    color: white;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: var(--shadow-card);
+  }
+  .corr-wall.right::after {
+    background: rgba(180,83,9,0.92);
+  }
+  .corr-floor {
+    position: absolute;
+    left: 58px; right: 58px; bottom: 0;
+    height: 155px;
+    background:
+      repeating-linear-gradient(90deg, rgba(15,23,42,0.06) 0 2px, transparent 2px 60px),
+      linear-gradient(180deg, #9aaabb, #c8d4de);
+    transform: rotateX(60deg);
+    transform-origin: bottom center;
+    border: 0;
+    box-shadow: 0 20px 38px rgba(15,23,42,0.10);
+    z-index: 0;
+  }
+  .light-beam {
+    position: absolute;
+    top: 0; left: 50%;
+    width: 2px; height: 0;
+    transform: translateX(-50%);
+  }
+  .axis-tag {
+    position: absolute;
+    font-family: var(--font-sans);
+    font-size: 20px;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: white;
+    box-shadow: var(--shadow-card);
+    z-index: 6;
+  }
+  .axis-tag.x { left: 92px; bottom: 18px; background: var(--navy); }
+  .axis-tag.y { right: 92px; bottom: 18px; background: var(--orange); }
+  .axis-ray {
+    position: absolute;
+    left: 50%; top: 238px;
+    width: 210px; height: 6px;
+    transform-origin: left center;
+    border-radius: 999px;
+    opacity: 0.9;
+    z-index: 4;
+  }
+  .axis-ray::after {
+    content: '';
+    position: absolute;
+    right: -10px; top: -7px;
+    border-left: 16px solid currentColor;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  }
+  .axis-ray.x {
+    color: #1a1a2e;
+    background: linear-gradient(90deg, #1a1a2e, rgba(26,26,46,0.15));
+    transform: rotateZ(160deg);
+    animation: axisPulseX 4.8s ease-in-out infinite;
+  }
+  .axis-ray.y {
+    color: #f59e0b;
+    background: linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.15));
+    transform: rotateZ(20deg);
+    animation: axisPulseY 4.8s ease-in-out infinite;
+  }
+  .light-source {
+    position: absolute;
+    left: 50%;
+    top: 24px;
+    transform: translateX(-50%);
+    background: #fff7d6;
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(245,158,11,0.20);
+    z-index: 8;
+  }
+  @keyframes axisPulseX {
+    0%, 38%, 100% { opacity: 0.20; }
+    12%, 28% { opacity: 1; }
+  }
+  @keyframes axisPulseY {
+    0%, 46%, 100% { opacity: 0.20; }
+    62%, 84% { opacity: 1; }
+  }
+
+  /* ===== Door (slide 9) ===== */
+  .door-stage {
+    width: 520px; height: 480px;
+    transform-style: preserve-3d;
+    transform: rotateY(-25deg) rotateX(4deg);
+    animation: floaty 7s ease-in-out infinite;
+  }
+  .door-frame {
+    position: absolute;
+    left: 50%; top: 40px;
+    transform: translateX(-50%);
+    width: 320px; height: 380px;
+    background: linear-gradient(180deg, #475569, #1e293b);
+    border-radius: 6px 6px 0 0;
+    box-shadow: var(--shadow-deep);
+    overflow: hidden;
+  }
+  .door-frame::before {
+    content:'';
+    position: absolute; inset: 16px 16px 0;
+    background: #0f172a;
+    border-radius: 4px 4px 0 0;
+  }
+  .door-leaf {
+    position: absolute;
+    top: 24px; height: 348px;
+    width: 144px;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0 1px, transparent 1px 18px),
+      linear-gradient(180deg, #f59e0b, #b45309);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+    border-radius: 2px;
+  }
+  .door-leaf.l { left: 24px; animation: doorL 6s ease-in-out infinite; }
+  .door-leaf.r { right: 24px; animation: doorR 6s ease-in-out infinite; }
+  @keyframes doorL {
+    0%,15% { transform: translateX(0); }
+    50%,70% { transform: translateX(-110px); }
+    100% { transform: translateX(0); }
+  }
+  @keyframes doorR {
+    0%,15% { transform: translateX(0); }
+    50%,70% { transform: translateX(110px); }
+    100% { transform: translateX(0); }
+  }
+  .rail {
+    position: absolute;
+    left: 50%; top: 40px;
+    width: 360px; height: 8px;
+    background: linear-gradient(180deg, #94a3b8, #475569);
+    transform: translateX(-50%);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .door-ray {
+    position: absolute;
+    left: 30px; top: 220px;
+    width: 460px; height: 4px;
+    background: linear-gradient(90deg, var(--orange), rgba(245,158,11,0));
+    transform: rotateZ(-6deg);
+    border-radius: 2px;
+    box-shadow: 0 0 16px rgba(245,158,11,0.6);
+    animation: rayPulse 2s ease-in-out infinite;
+  }
+  @keyframes rayPulse {
+    0%,100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .code-panel {
+    margin: 0;
+    padding: 22px 26px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1.45;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .code-panel .comment { color: #94a3b8; }
+  .code-panel .kw { color: #f472b6; }
+  .code-panel .type { color: #60a5fa; }
+  .code-panel .num { color: #fcd34d; }
+  .code-panel .ok { color: #86efac; }
+  .formula-card {
+    background: white;
+    border-left: 5px solid var(--blue);
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    padding: 22px 26px;
+  }
+  .formula-card .formula {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    color: var(--navy);
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+  .math-formula {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 42px;
+    color: var(--navy);
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+  .math-formula.compact { font-size: 36px; }
+  .math-formula .roman {
+    font-style: italic;
+  }
+  .math-formula sub {
+    font-size: 0.62em;
+    vertical-align: -0.22em;
+  }
+  .math-formula .frac {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+    margin: 0 0.22em;
+    padding: 0 0.12em 0.78em;
+    line-height: 1;
+    text-align: center;
+  }
+  .math-formula .frac .top {
+    display: block;
+    border-bottom: 2px solid currentColor;
+    padding: 0 0.18em 0.08em;
+  }
+  .math-formula .frac .bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 1.08em;
+    text-align: center;
+  }
+  .formula-card .note {
+    font-family: var(--font-sans);
+    font-size: 24px;
+    color: var(--ink-soft);
+    line-height: 1.35;
+  }
+  .media-frame {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-deep);
+    overflow: hidden;
+    border: 1px solid var(--rule);
+  }
+  .media-frame img {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+  }
+  .media-caption {
+    padding: 14px 18px 16px;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    color: var(--ink-soft);
+    line-height: 1.35;
+    background: white;
+  }
+  .callout-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .callout {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    padding: 20px 22px;
+    border-top: 4px solid var(--blue);
+  }
+  .callout.orange { border-top-color: var(--orange); }
+  .callout.green { border-top-color: #10b981; }
+  .callout .k {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .callout .v {
+    font-size: 24px;
+    color: var(--navy);
+    line-height: 1.25;
+    font-weight: 600;
+  }
+  .flow-strip {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: stretch;
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .flow-step {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    border-top: 4px solid var(--blue);
+    padding: 18px 20px;
+  }
+  .flow-step.orange { border-top-color: var(--orange); }
+  .flow-step.green { border-top-color: #10b981; }
+  .flow-step .k {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .flow-step .v {
+    font-size: 23px;
+    color: var(--navy);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .push-stage {
+    width: 620px;
+    height: 460px;
+    position: relative;
+    transform-style: preserve-3d;
+    perspective: 1200px;
+  }
+  .push-room {
+    position: absolute;
+    inset: 44px 40px 34px;
+    transform: rotateX(58deg) rotateZ(-24deg);
+    transform-style: preserve-3d;
+  }
+  .push-grid {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(15,23,42,0.14) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(15,23,42,0.14) 2px, transparent 2px),
+      #eef2f7;
+    background-size: 86px 86px;
+    border: 3px solid #cbd5e1;
+    border-radius: 12px;
+  }
+  .push-block {
+    position: absolute;
+    width: 86px;
+    height: 86px;
+    left: 258px;
+    top: 172px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.24) 0 4px, transparent 4px 16px),
+      linear-gradient(135deg, #334155, #111827);
+    border: 4px solid #f59e0b;
+    box-shadow: 28px 28px 0 rgba(51,65,85,0.32);
+    animation: pushBlock 5s ease-in-out infinite;
+  }
+  .push-ray {
+    position: absolute;
+    left: 70px;
+    top: 286px;
+    width: 430px;
+    height: 5px;
+    background: linear-gradient(90deg, #2563eb, rgba(37,99,235,0));
+    transform: rotateZ(-18deg);
+    border-radius: 999px;
+    box-shadow: 0 0 18px rgba(37,99,235,0.35);
+  }
+  .push-label {
+    position: absolute;
+    right: 28px;
+    bottom: 36px;
+    background: var(--navy);
+    color: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    line-height: 1.35;
+    box-shadow: var(--shadow-card);
+  }
+  @keyframes pushBlock {
+    0%, 20% { transform: translate(0, 0); }
+    55%, 78% { transform: translate(74px, 0); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* ===== Section dividers / accents ===== */
+  .accent-bar {
+    width: 80px; height: 6px;
+    background: var(--orange);
+    border-radius: 3px;
+    margin-bottom: 32px;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 60px;
+    margin-top: 48px;
+  }
+  .stat {
+    flex: 1;
+    background: white;
+    padding: 28px 32px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+    border-top: 4px solid var(--blue);
+  }
+  .stat .n {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+  }
+  .stat .l {
+    font-size: 20px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    font-family: var(--font-mono);
+  }
+  .stat.orange { border-top-color: var(--orange); }
+
+</style>
+</head>
+<body>
+
+<deck-stage width="1920" height="1080" no-rail fill style="--deck-fill-bg: var(--bg);">
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 1 — Capa -->
+  <!-- ============================================================ -->
+  <section data-label="01 Capa" class="cover">
+    <div class="slide-num">01 / 23</div>
+    <p class="eyebrow">Black Book · Seção 4.7</p>
+    <div class="stage-3d">
+      <div class="cube">
+        <div class="face brick f-front"></div>
+        <div class="face brick alt f-back"></div>
+        <div class="face brick f-right"></div>
+        <div class="face brick alt f-left"></div>
+        <div class="face f-top"></div>
+        <div class="face f-bottom"></div>
+      </div>
+    </div>
+    <h1>Renderizador 3D do Wolfenstein 3D</h1>
+    <h2>Como a magia acontecia em um 386</h2>
+    <div class="meta">Estudo do código · id Software · 1992</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 2 — Fisheye (conceito + 3D + figura 4.53) -->
+  <!-- ============================================================ -->
+  <section data-label="02 Fisheye">
+    <div class="slide-num">02 / 23</div>
+    <p class="eyebrow">4.7.6 · Correção do Efeito Fisheye</p>
+    <h1 class="title">Correção do Efeito Fisheye</h1>
+    <div class="body-grid">
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Raios medidos com a distância <b>direta (d)</b> causam distorção nas bordas</li>
+          <li><span class="marker">▶</span>Solução: usar a distância <b>projetada (z)</b> no eixo do jogador</li>
+          <li><span class="marker">▶</span>Linhas retas das paredes ficam <b>geometricamente corretas</b></li>
+          <li><span class="marker">▶</span>Comparação visual nos dois próximos slides</li>
+        </ul>
+      </div>
+      <div class="stage-3d">
+        <div class="fisheye-stage">
+          <div class="floor-grid"></div>
+          <div class="ray straight"></div>
+          <div class="ray straight l2"></div>
+          <div class="ray curved"></div>
+          <div class="ray curved r2"></div>
+          <div class="player-dot"></div>
+          <div class="legend">
+            <span><span class="swatch" style="background:#2563eb"></span>z (correto)</span>
+            <span><span class="swatch" style="background:#f59e0b"></span>d (fisheye)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>02</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 2b — Figura 4.53 grande -->
+  <!-- ============================================================ -->
+  <section data-label="03 Map → Player Space">
+    <div class="slide-num">03 / 23</div>
+    <p class="eyebrow">Figura 4.53 · do mapa ao jogador</p>
+    <h1 class="title" style="margin-bottom: 34px;">Map Space → Player Space</h1>
+    <div style="display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 42px; flex: 1; align-items: start;">
+      <div style="background: white; padding: 26px; border-radius: 12px; box-shadow: var(--shadow-deep); display: flex; align-items: center; justify-content: center;">
+        <img src="images/fig-4-53.png" alt="Figura 4.53 — translação map space para player space" style="width: 100%; max-height: 580px; object-fit: contain; display: block;" />
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 22px;">
+        <div class="formula-card" style="padding: 22px 26px;">
+          <div class="note" style="font-size: 25px; color: var(--ink);">O raycaster primeiro muda o referencial: o mundo deixa de ser medido pela origem do mapa e passa a ser medido a partir do jogador.</div>
+        </div>
+        <div class="callout-grid" style="grid-template-columns: 1fr 1fr; gap: 18px;">
+          <div class="callout">
+            <div class="k">Map space</div>
+            <div class="v">origem fixa do mundo</div>
+          </div>
+          <div class="callout orange">
+            <div class="k">Player space</div>
+            <div class="v">jogador vira o centro</div>
+          </div>
+          <div class="callout green">
+            <div class="k">Coordenada z</div>
+            <div class="v">distância projetada no olhar</div>
+          </div>
+          <div class="callout">
+            <div class="k">Resultado</div>
+            <div class="v">paredes retas sem fisheye</div>
+          </div>
+        </div>
+        <div class="flow-strip">
+          <div class="flow-step">
+            <div class="k">1. Transladar</div>
+            <div class="v">hit - jogador</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step orange">
+            <div class="k">2. Rotacionar</div>
+            <div class="v">alinhar com visão</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step green">
+            <div class="k">3. Projetar</div>
+            <div class="v">usar z</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>03</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 2c — Antes vs Depois (cena 1) -->
+  <!-- ============================================================ -->
+  <section data-label="04 Comparativo Cena 1">
+    <div class="slide-num">04 / 23</div>
+    <p class="eyebrow">Comparativo · cena com parede longa</p>
+    <h1 class="title">Antes &amp; Depois — Parede Longa</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; flex: 1; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="font-family: var(--font-mono); font-size: 26px; color: #b91c1c; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✗ com fisheye · distância d</div>
+        <img src="images/fisheye-before-1.png" alt="cena com fisheye" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
+        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">A parede curva visivelmente nas bordas — tijolos esticam onde deveriam estar retos</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="font-family: var(--font-mono); font-size: 26px; color: #047857; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✓ corrigido · distância z</div>
+        <img src="images/fisheye-after-1.png" alt="cena corrigida" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
+        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">Linhas retas, perspectiva geométrica correta — a sala parece sólida</div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>04</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 2d — Antes vs Depois (cena 2) -->
+  <!-- ============================================================ -->
+  <section data-label="05 Comparativo Cena 2">
+    <div class="slide-num">05 / 23</div>
+    <p class="eyebrow">Comparativo · cena com porta</p>
+    <h1 class="title">Antes &amp; Depois — Porta ao Centro</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; flex: 1; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="font-family: var(--font-mono); font-size: 26px; color: #b91c1c; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✗ com fisheye · distância d</div>
+        <img src="images/fisheye-before-2.png" alt="porta com fisheye" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
+        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">A porta e as paredes laterais aparecem deformadas, esticadas para fora</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="font-family: var(--font-mono); font-size: 26px; color: #047857; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✓ corrigido · distância z</div>
+        <img src="images/fisheye-after-2.png" alt="porta corrigida" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
+        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">Porta retangular, paredes paralelas — leitura espacial natural</div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>05</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 3 — Desenhando paredes -->
+  <!-- ============================================================ -->
+  <section data-label="06 Paredes">
+    <div class="slide-num">06 / 23</div>
+    <p class="eyebrow">4.7.7 · Desenho de paredes</p>
+    <h1 class="title">Desenhando Paredes em um 386</h1>
+    <div class="body-grid flip">
+      <div class="stage-3d">
+        <div class="wall-stage">
+          <div class="wall">
+            <div class="col"></div><div class="col"></div>
+            <div class="col hi"><div class="col-tag a">A</div></div>
+            <div class="col"></div><div class="col"></div>
+            <div class="col hi b"><div class="col-tag b">B</div></div>
+            <div class="col"></div><div class="col"></div>
+            <div class="col hi c"><div class="col-tag c">C</div></div>
+            <div class="col"></div><div class="col"></div>
+            <div class="col"></div><div class="col"></div>
+          </div>
+          <div class="wall-caption">cada coluna = <b>1 texel escalado verticalmente</b></div>
+        </div>
+      </div>
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Altura da coluna calculada → desenhar coluna de <b>texels escalada</b></li>
+          <li><span class="marker">▶</span>CPU 386 é limitada: escalar 64 texels é <b>caro</b></li>
+          <li><span class="marker">▶</span>Wolfenstein supera os engines da época com <b>2 otimizações</b></li>
+          <li><span class="marker">▶</span>Segredo: <b>Compiled Scalers</b> + <b>Deferred Column Rendering</b></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>06</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 4 — Compiled scalers -->
+  <!-- ============================================================ -->
+  <section data-label="07 Compiled Scalers">
+    <div class="slide-num">07 / 23</div>
+    <p class="eyebrow">4.7.7.1 · Otimização #1</p>
+    <h1 class="title">Compiled Scalers</h1>
+    <div class="body-grid">
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Abordagem genérica usa <b>loop + acumulador</b> → muitas instruções</li>
+          <li><span class="marker">▶</span>Solução: gerar <b>funções hard-coded</b> para cada altura no startup</li>
+          <li><span class="marker">▶</span>256 funções pré-compiladas <b>eliminam o loop</b> completamente</li>
+          <li><span class="marker">▶</span>Custo: <b>83.160 bytes</b> de RAM para 136 scalers</li>
+          <li><span class="marker">▶</span>Benefício: de dezenas de instruções para <b>3-7 por pixel</b></li>
+        </ul>
+        <div style="margin-top: 36px; display: flex; gap: 28px; font-family: var(--font-mono); font-size: 22px;">
+          <div style="flex: 1; padding: 20px 24px; background: #f1f5f9; border-radius: 10px; border-left: 4px solid #94a3b8;">
+            <div style="color: var(--ink-soft); font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;">Genérico</div>
+            <div style="color: var(--navy); font-weight: 700;">~30 instr/pixel</div>
+          </div>
+          <div style="flex: 1; padding: 20px 24px; background: #fff7d6; border-radius: 10px; border-left: 4px solid var(--orange);">
+            <div style="color: #b45309; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;">Compiled</div>
+            <div style="color: var(--navy); font-weight: 700;">3–7 instr/pixel</div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-3d">
+        <div class="scaler-stage">
+          <div class="scaler-deck">
+            <div class="chip" style="transform: translateZ(-160px);"><span class="num">scale_064</span><span class="ops">mov · mov · mov</span></div>
+            <div class="chip" style="transform: translateZ(-80px);"><span class="num">scale_098</span><span class="ops">mov · mov · mov · mov</span></div>
+            <div class="chip accent" style="transform: translateZ(0px);"><span class="num">scale_128</span><span class="ops">mov · mov · mov · mov · mov</span></div>
+            <div class="chip" style="transform: translateZ(80px);"><span class="num">scale_162</span><span class="ops">mov · mov · mov</span></div>
+            <div class="chip" style="transform: translateZ(160px);"><span class="num">scale_200</span><span class="ops">mov · mov · mov · mov</span></div>
+            <div class="pixel-col">
+              <span style="background:#1a1a2e"></span>
+              <span style="background:#2563eb"></span>
+              <span style="background:#f59e0b"></span>
+              <span style="background:#b45309"></span>
+              <span style="background:#1a1a2e"></span>
+              <span style="background:#2563eb"></span>
+              <span style="background:#f59e0b"></span>
+              <span style="background:#1a1a2e"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>07</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 8 — Compiled Scalers · onde isso aparece em cena -->
+  <!-- ============================================================ -->
+  <section data-label="08 Scalers em Cena">
+    <div class="slide-num">08 / 23</div>
+    <p class="eyebrow">4.7.7.1 · Onde os scalers atuam</p>
+    <h1 class="title">Cada Coluna, um Scaler Pronto</h1>
+    <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 56px; flex: 1; align-items: center;">
+      <div style="position: relative;">
+        <img src="images/wolf-corridor-pink.png" alt="corredor com linha de varredura" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep);" />
+        <div style="position: absolute; left: 24px; bottom: 24px; background: rgba(15,23,42,0.92); color: #fff; padding: 14px 20px; border-radius: 8px; font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.04em;">
+          <span style="color: #f472b6;">━</span> linha de varredura · 320 colunas
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 28px;">
+        <ul class="bullets" style="margin: 0;">
+          <li><span class="marker">▶</span>Cada <b>coluna vertical</b> da tela é um raio lançado</li>
+          <li><span class="marker">▶</span>O raio devolve uma <b>altura em pixels</b> para a parede</li>
+          <li><span class="marker">▶</span>O engine seleciona o <b>scaler compilado</b> daquela altura</li>
+          <li><span class="marker">▶</span>320 chamadas por frame, <b>sem loop interno</b></li>
+        </ul>
+        <div style="padding: 24px 28px; background: #eff6ff; border-radius: 10px; border-left: 4px solid var(--blue); font-size: 26px; line-height: 1.4;">
+          <b style="color: var(--blue);">scale_h(src, dst)</b> roda 320× por frame — uma chamada por coluna
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>08</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 9 — Compiled Scalers · código C/x86 -->
+  <!-- ============================================================ -->
+  <section data-label="09 Scalers no Código">
+    <div class="slide-num">09 / 23</div>
+    <p class="eyebrow">4.7.7.1 · Genérico vs. Hard-coded</p>
+    <h1 class="title">Do Loop Genérico ao x86 Compilado</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0;">
+      <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+        <div style="font-family: var(--font-mono); font-size: 20px; color: #64748b; letter-spacing: 0.06em; text-transform: uppercase;">Antes · genérico</div>
+        <pre style="margin: 0; padding: 24px 28px; background: #0f172a; color: #e2e8f0; border-radius: 10px; font-family: var(--font-mono); font-size: 19px; line-height: 1.45; overflow: hidden; flex: 1;"><span style="color:#94a3b8;">// aceita qualquer altura — caro</span>
+<span style="color:#60a5fa;">void</span> scaleTextureToHeight(<span style="color:#60a5fa;">int</span> h, ...) {
+  fixed_t cur = 0;
+  fixed_t step = FixedDiv(64, h);
+  <span style="color:#f472b6;">while</span> (h > 0) {
+    <span style="color:#f472b6;">if</span> (not_clipped(d))
+      dst[d] = src[cur >> 8];
+    cur += step;
+    h--; d++;
+  }
+}</pre>
+        <div style="font-family: var(--font-mono); font-size: 18px; color: #b91c1c;">▸ loop + jmp + acumulador a cada pixel</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+        <div style="font-family: var(--font-mono); font-size: 20px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase;">Depois · hard-coded</div>
+        <pre style="margin: 0; padding: 24px 28px; background: #0f172a; color: #e2e8f0; border-radius: 10px; font-family: var(--font-mono); font-size: 19px; line-height: 1.45; overflow: hidden; flex: 1;"><span style="color:#94a3b8;">// uma função por altura</span>
+<span style="color:#60a5fa;">void</span> scaleTextureTo2(...) {
+  dst[0] = src[16];
+  dst[1] = src[48];
+}
+<span style="color:#60a5fa;">void</span> scaleTextureTo4(...) {
+  dst[0] = src[<span style="color:#fcd34d;">0</span>];
+  dst[1] = src[<span style="color:#fcd34d;">16</span>];
+  dst[2] = src[<span style="color:#fcd34d;">32</span>];
+  dst[3] = src[<span style="color:#fcd34d;">63</span>];
+}</pre>
+        <div style="font-family: var(--font-mono); font-size: 18px; color: #047857;">▸ <b>BuildCompScale</b> emite os bytes x86 no startup</div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>09</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 5 — Tradeoff -->
+  <!-- ============================================================ -->
+  <section data-label="10 RAM vs CPU">
+    <div class="slide-num">10 / 23</div>
+    <p class="eyebrow">Tradeoff de engenharia</p>
+    <h1 class="title">RAM vs CPU — O Tradeoff Clássico</h1>
+    <div class="body-grid flip">
+      <div class="stage-3d">
+        <div class="balance-stage">
+          <div class="balance-rig">
+            <div class="balance-base"></div>
+            <div class="balance-pillar"></div>
+            <div class="balance-pivot">
+              <div class="beam"></div>
+              <div class="beam-jewel"></div>
+              <div class="pan-arm left">
+                <div class="pan-rope"></div>
+                <div class="pan-plate"></div>
+                <div class="pan-weight ram">
+                  <div class="pw-tag">RAM</div>
+                  <div class="pw-val">83 KB<br/>136 funções</div>
+                </div>
+              </div>
+              <div class="pan-arm right">
+                <div class="pan-rope"></div>
+                <div class="pan-plate"></div>
+                <div class="pan-weight cpu">
+                  <div class="pw-tag">CPU</div>
+                  <div class="pw-val">3–7 instr<br/>por pixel</div>
+                </div>
+              </div>
+            </div>
+            <div class="balance-floor">
+              <span><b>+ pesado</b></span>
+              <span><b>− leve</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Versão original: 255 scalers = <b>178.479 bytes</b> → caro demais</li>
+          <li><span class="marker">▶</span>Otimização: acima de 76px, <b>pular alturas</b> (78, 82, 86…)</li>
+          <li><span class="marker">▶</span>Resultado: <b>136 scalers = 83.160 bytes</b> — custo aceitável</li>
+          <li><span class="marker">▶</span>Artefato visual <b>mínimo</b> ao usar o scaler errado</li>
+          <li><span class="marker">▶</span>Re-geração necessária ao redimensionar o canvas 3D</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>10</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 11 — Deferred column drawing · CONCEITO -->
+  <!-- ============================================================ -->
+  <section data-label="11 Deferred Drawing">
+    <div class="slide-num">11 / 23</div>
+    <p class="eyebrow">4.7.7.2 · Otimização #2</p>
+    <h1 class="title">Deferred Column Drawing</h1>
+    <div class="body-grid">
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Em vez de desenhar cada coluna assim que sai do raycaster…</li>
+          <li><span class="marker">▶</span>O engine <b>bufferiza</b> colunas "similares" e dispara em batch</li>
+          <li><span class="marker">▶</span>"Similar" = mesmo <b>texel horizontal</b> &amp; mesma altura projetada</li>
+          <li><span class="marker">▶</span>Até <b>8 colunas</b> escritas em até <b>3 operações</b> no VGA</li>
+          <li><span class="marker">▶</span>Combina com a estrutura do hardware: <b>4 planos VGA</b> em paralelo</li>
+        </ul>
+        <div style="margin-top: 36px; padding: 24px 28px; background: #fff7d6; border-radius: 10px; border-left: 4px solid var(--orange); font-size: 24px; line-height: 1.4;">
+          <b style="color: #b45309;">Ideia central:</b> trocar muitas escritas pequenas por <b>poucas escritas largas</b>, alinhadas aos planos do VGA.
+        </div>
+      </div>
+      <div class="stage-3d">
+        <div class="batch-stage">
+          <div class="batch-row">
+            <div class="bcol b0"></div><div class="bcol b1"></div>
+            <div class="bcol b2"></div><div class="bcol b3"></div>
+            <div class="bcol b0"></div><div class="bcol b1"></div>
+            <div class="bcol b2"></div><div class="bcol b3"></div>
+          </div>
+          <div class="batch-arrow"><span>batch · 3 ops</span></div>
+          <div class="vga-write">VGA WRITE → 8 colunas</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>11</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 12 — Deferred · pseudocódigo antes/depois -->
+  <!-- ============================================================ -->
+  <section data-label="12 Buffer vs Direto">
+    <div class="slide-num">12 / 23</div>
+    <p class="eyebrow">4.7.7.2 · Loop principal</p>
+    <h1 class="title">Bufferizar Antes de Desenhar</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0;">
+      <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+        <div style="font-family: var(--font-mono); font-size: 20px; color: #64748b; letter-spacing: 0.06em; text-transform: uppercase;">Raycaster ingênuo</div>
+        <pre style="margin: 0; padding: 24px 28px; background: #0f172a; color: #e2e8f0; border-radius: 10px; font-family: var(--font-mono); font-size: 19px; line-height: 1.5; overflow: hidden; flex: 1;"><span style="color:#94a3b8;">// 1 raio = 1 escrita imediata</span>
+<span style="color:#f472b6;">for</span> (<span style="color:#60a5fa;">int</span> x = <span style="color:#fcd34d;">0</span>; x &lt; <span style="color:#fcd34d;">320</span>; x++) {
+  castRay();
+  height = CalculateWallHeight();
+  drawColumn(x, height);   <span style="color:#94a3b8;">// ← VGA write</span>
+}</pre>
+        <div style="font-family: var(--font-mono); font-size: 18px; color: #b91c1c;">▸ <b>320 escritas</b> no VGA por frame</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+        <div style="font-family: var(--font-mono); font-size: 20px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase;">Wolfenstein · com buffer</div>
+        <pre style="margin: 0; padding: 24px 28px; background: #0f172a; color: #e2e8f0; border-radius: 10px; font-family: var(--font-mono); font-size: 19px; line-height: 1.5; overflow: hidden; flex: 1;"><span style="color:#94a3b8;">// agrupa colunas similares</span>
+<span style="color:#f472b6;">for</span> (<span style="color:#60a5fa;">int</span> x = <span style="color:#fcd34d;">0</span>; x &lt; <span style="color:#fcd34d;">320</span>; x++) {
+  castRay();
+  <span style="color:#f472b6;">if</span> (raySimilarToOnesInBuffer) {
+    AddColumnToBuffer();   <span style="color:#94a3b8;">// adia</span>
+    <span style="color:#f472b6;">continue</span>;
+  } <span style="color:#f472b6;">else</span> {
+    DrawBuffer();          <span style="color:#fcd34d;">// ← 1 batch</span>
+    height = CalcWallHeight();
+    AddColumnToBuffer();
+  }
+}</pre>
+        <div style="font-family: var(--font-mono); font-size: 18px; color: #047857;">▸ <b>~½ das escritas</b> — colunas vizinhas viram <b>uma</b></div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>12</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 13 — VGA banks (com 3D + ScalePost no quadro) -->
+  <!-- ============================================================ -->
+  <section data-label="13 VGA Banks">
+    <div class="slide-num">13 / 23</div>
+    <p class="eyebrow">4.7.7.2 · ScalePost &amp; VGA</p>
+    <h1 class="title">VGA Plane Masking</h1>
+    <div class="body-grid flip">
+      <div class="stage-3d">
+        <div class="banks-stage">
+          <div class="mask-bits">
+            <span>1</span><span>0</span><span>1</span><span>1</span>
+          </div>
+          <div class="banks-grid">
+            <!-- 16 cols × 8 rows -->
+            <!-- Row generated inline -->
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Tela em <b>4 banks VGA</b>: cols 0,4,8 → Bank 0; 1,5,9 → Bank 1…</li>
+          <li><span class="marker">▶</span>Uma escrita pode atingir <b>até 4 colunas</b> de uma vez</li>
+          <li><span class="marker">▶</span>A <b>máscara de bits</b> seleciona quais banks recebem o byte</li>
+          <li><span class="marker">▶</span>Função <b>ScalePost</b> aplica a máscara, escreve, e roda o scaler compilado</li>
+          <li><span class="marker">▶</span>Cada pass = (set mask) → (call compiled scaler)</li>
+        </ul>
+        <pre style="margin: 28px 0 0; padding: 22px 26px; background: #0f172a; color: #e2e8f0; border-radius: 10px; font-family: var(--font-mono); font-size: 17px; line-height: 1.45; overflow: hidden;"><span style="color:#94a3b8;">// ScalePost — VGA version (resumido)</span>
+asm mov al, BYTE PTR [<span style="color:#fcd34d;">mapmasks1</span>-1+bx]  <span style="color:#94a3b8;">// pass 1</span>
+asm out dx, al                      <span style="color:#94a3b8;">// set VGA mask</span>
+asm call DWORD PTR [bp]             <span style="color:#f472b6;">// compiled scaler</span>
+
+asm mov al, BYTE PTR [<span style="color:#fcd34d;">mapmasks2</span>-1+bx]  <span style="color:#94a3b8;">// pass 2</span>
+asm or  al, al
+asm jz  nomore                      <span style="color:#94a3b8;">// mask=0 ⇒ sai</span>
+asm out dx, al
+asm call DWORD PTR [bp]
+<span style="color:#94a3b8;">// pass 3 idem...</span></pre>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>13</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 14 — mapmasks: lookup pré-calculado (3 imagens) -->
+  <!-- ============================================================ -->
+  <section data-label="14 mapmasks Lookup">
+    <div class="slide-num">14 / 23</div>
+    <p class="eyebrow">4.7.7.2 · mapmasks[1..3]</p>
+    <h1 class="title">Quantos Passes? Depende do Alinhamento</h1>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; flex: 1; align-items: stretch;">
+      <div style="display: flex; flex-direction: column; gap: 14px; background: white; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-card); border-top: 4px solid #047857;">
+        <div style="font-family: var(--font-mono); font-size: 18px; color: #047857; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Caso ideal · 1 pass</div>
+        <img src="images/vga-mask-1pass.png" alt="2 colunas alinhadas em 1 pass" style="width: 100%; background: white; border-radius: 8px;" />
+        <div style="font-family: var(--font-mono); font-size: 16px; color: var(--ink); line-height: 1.5;">
+          <b>pixels 0-1</b> · banks 0+1<br/>
+          <span style="color:#047857;">mask = 3</span> · <b>1 escrita</b> resolve tudo
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; background: white; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-card); border-top: 4px solid var(--orange);">
+        <div style="font-family: var(--font-mono); font-size: 18px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Desalinhado · 2 passes</div>
+        <img src="images/vga-mask-2pass.png" alt="2 colunas atravessando boundary" style="width: 100%; background: white; border-radius: 8px;" />
+        <div style="font-family: var(--font-mono); font-size: 16px; color: var(--ink); line-height: 1.5;">
+          <b>pixels 3-4</b> · cruza fronteira<br/>
+          <span style="color:#b45309;">mask₁ = 8 · mask₂ = 1</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; background: white; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-card); border-top: 4px solid #b91c1c;">
+        <div style="font-family: var(--font-mono); font-size: 18px; color: #b91c1c; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Pior caso · 3 passes</div>
+        <img src="images/vga-mask-3pass.png" alt="8 colunas em 3 passes" style="width: 100%; background: white; border-radius: 8px;" />
+        <div style="font-family: var(--font-mono); font-size: 16px; color: var(--ink); line-height: 1.5;">
+          <b>pixels 3-A</b> · 8 colunas<br/>
+          <span style="color:#b91c1c;">mask₁=8 · mask₂=15 · mask₃=7</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 36px; padding: 20px 28px; background: var(--navy); color: #fff; border-radius: 10px; font-family: var(--font-mono); font-size: 20px; line-height: 1.4; display: flex; align-items: center; gap: 24px;">
+      <span style="color: var(--orange); font-weight: 700; letter-spacing: 0.04em;">LOOKUP</span>
+      <span>3 tabelas <b style="color:#fcd34d;">mapmasks[4][8]</b> · indexadas por <b style="color:#fcd34d;">(bank align, pixel count)</b> · zero cálculo em runtime</span>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>14</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 15 — Resultado: 50% das escritas evitadas -->
+  <!-- ============================================================ -->
+  <section data-label="15 50% Escritas Evitadas">
+    <div class="slide-num">15 / 23</div>
+    <p class="eyebrow">4.7.7.2 · ganho real medido</p>
+    <h1 class="title" style="margin-bottom: 28px;">Tudo em <span style="color: #d946ef;">rosa</span> é uma escrita evitada</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px; align-items: stretch;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase;">Cena 1 · original</div>
+        <img src="images/wolf-blue-before.png" alt="blue original" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-card);" />
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: var(--font-mono); font-size: 14px; color: #d946ef; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Cena 1 · debug rosa</div>
+        <img src="images/wolf-blue-pink.png" alt="blue debug" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-deep); border: 2px solid #d946ef;" />
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase;">Cena 2 · original</div>
+        <img src="images/wolf-eagle-before.png" alt="eagle original" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-card);" />
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: var(--font-mono); font-size: 14px; color: #d946ef; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Cena 2 · debug rosa</div>
+        <img src="images/wolf-eagle-pink.png" alt="eagle debug" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-deep); border: 2px solid #d946ef;" />
+      </div>
+    </div>
+    <ul class="bullets" style="margin-top: 32px; gap: 14px;">
+      <li style="font-size: 24px; padding-left: 48px;"><span class="marker" style="font-size: 22px;">▶</span>Cada faixa <b style="color:#d946ef;">rosa</b> é uma coluna que o engine <b>NÃO</b> precisou escrever — veio de graça com a vizinha</li>
+      <li style="font-size: 24px; padding-left: 48px;"><span class="marker" style="font-size: 22px;">▶</span>O ganho cresce quando o jogador está <b>perto da parede</b> (mais colunas idênticas adjacentes)</li>
+    </ul>
+    <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 18px;">
+      <div style="background: white; padding: 16px 20px; border-radius: 8px; box-shadow: var(--shadow-card); border-left: 4px solid var(--orange);">
+        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Escritas evitadas</div>
+        <div style="font-family: var(--font-mono); font-size: 30px; color: var(--navy); font-weight: 700;">~50%</div>
+      </div>
+      <div style="background: white; padding: 16px 20px; border-radius: 8px; box-shadow: var(--shadow-card); border-left: 4px solid var(--blue);">
+        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Custo extra</div>
+        <div style="font-family: var(--font-mono); font-size: 18px; color: var(--navy); font-weight: 600; line-height: 1.2;">comparação por raio</div>
+      </div>
+      <div style="background: var(--navy); color: white; padding: 16px 20px; border-radius: 8px;">
+        <div style="font-family: var(--font-mono); font-size: 12px; color: #fcd34d; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Trivia · DOOM '93</div>
+        <div style="font-family: var(--font-mono); font-size: 15px; line-height: 1.3;">"low detail mode" duplica colunas (160→320) usando o mesmo truque do VGA para rodar em 386</div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>15</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 8 — Baked light texturing -->
+  <!-- ============================================================ -->
+  <section data-label="16 Baked Light">
+    <div class="slide-num">16 / 23</div>
+    <p class="eyebrow">4.7.7.3 · Texturing</p>
+    <h1 class="title">Baked Light Texturing</h1>
+    <div class="body-grid">
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Sem GPU, sem shaders — iluminação em tempo real era <b>impossível</b> em 386</li>
+          <li><span class="marker">▶</span>Solução: pré-computar a luz direto no <b>asset</b></li>
+          <li><span class="marker">▶</span>Cada textura existe <b>duas vezes</b>: versão <b>lit</b> e versão <b>unlit</b></li>
+          <li><span class="marker">▶</span>O eixo de impacto do raio decide qual delas usar</li>
+          <li><span class="marker">▶</span>Custo em runtime: <b>zero</b> — apenas um if no raycaster</li>
+        </ul>
+        <div style="margin-top: 32px; padding: 22px 28px; background: var(--navy); color: white; border-radius: 10px; font-family: var(--font-mono); font-size: 18px; line-height: 1.5;">
+          <span style="color: #fcd34d;">// dentro do raycaster</span><br/>
+          <span style="color:#f472b6;">if</span> (hit_axis == Y_AXIS)<br/>
+          &nbsp;&nbsp;tex = textures[id].<span style="color:#86efac;">lit</span>;<br/>
+          <span style="color:#f472b6;">else</span><br/>
+          &nbsp;&nbsp;tex = textures[id].<span style="color:#fca5a5;">unlit</span>;
+        </div>
+      </div>
+      <div class="stage-3d">
+        <div class="corridor-stage">
+          <div class="light-source">luz baked na arte</div>
+          <div class="corridor">
+            <div class="corr-wall back" data-label="fundo"></div>
+            <div class="corr-wall left" data-label="X · unlit"></div>
+            <div class="corr-wall right" data-label="Y · lit"></div>
+            <div class="axis-ray x"></div>
+            <div class="axis-ray y"></div>
+            <div class="axis-tag x">eixo X · escuro</div>
+            <div class="axis-tag y">eixo Y · claro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>16</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 17 — As duas texturas (lit/unlit) -->
+  <!-- ============================================================ -->
+  <section data-label="17 Lit vs Unlit">
+    <div class="slide-num">17 / 23</div>
+    <p class="eyebrow">4.7.7.3 · Figura 4.55 — duas versões de cada textura</p>
+    <h1 class="title">Uma Textura, Duas Versões</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 48px; flex: 1; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 16px; align-items: center;">
+        <div style="font-family: var(--font-mono); font-size: 22px; color: #047857; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">▲ LIT · paredes em Y</div>
+        <img src="images/tex-lit.png" alt="textura iluminada" style="width: 100%; max-width: 360px; aspect-ratio: 1/1; object-fit: cover; image-rendering: pixelated; border-radius: 10px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
+        <div style="font-family: var(--font-mono); font-size: 18px; color: var(--ink-soft); text-align: center;">cores claras<br/>"luz batendo de cima"</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px; align-items: center;">
+        <div style="font-family: var(--font-mono); font-size: 22px; color: #b45309; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">▼ UNLIT · paredes em X</div>
+        <img src="images/tex-unlit.png" alt="textura escura" style="width: 100%; max-width: 360px; aspect-ratio: 1/1; object-fit: cover; image-rendering: pixelated; border-radius: 10px; box-shadow: var(--shadow-deep); border: 4px solid #f59e0b;" />
+        <div style="font-family: var(--font-mono); font-size: 18px; color: var(--ink-soft); text-align: center;">paleta escurecida<br/>"face em sombra"</div>
+      </div>
+      <div>
+        <ul class="bullets" style="gap: 18px;">
+          <li><span class="marker">▶</span>Mesma arte, <b>duas paletas</b> — lit ~30% mais clara</li>
+          <li><span class="marker">▶</span>O raycaster sabe se acertou em <b>X ou Y</b> de graça (vem do DDA)</li>
+          <li><span class="marker">▶</span>Esse bit decide qual versão da textura amostrar</li>
+          <li><span class="marker">▶</span>Custo em RAM: <b>2× textures</b> · custo em CPU: <b>0</b></li>
+        </ul>
+        <div style="margin-top: 28px; padding: 20px 24px; background: #eff6ff; border-radius: 10px; border-left: 4px solid var(--blue); font-size: 22px; line-height: 1.4;">
+          <b style="color: var(--blue);">Sol implícito</b> — uma luz direcional em <b>+Y</b>, embutida na arte e nunca calculada
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>17</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 18 — Resultado em cena (com/sem baked) -->
+  <!-- ============================================================ -->
+  <section data-label="18 Cena com vs sem baked">
+    <div class="slide-num">18 / 23</div>
+    <p class="eyebrow">4.7.7.3 · Figura 4.56 — impacto visual</p>
+    <h1 class="title">Sem &amp; Com Baked Lighting</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; flex: 1; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-family: var(--font-mono); font-size: 24px; color: #b91c1c; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✗ sem baked · tudo lit</div>
+        <img src="images/scene-no-baked.png" alt="cena sem baked lighting" style="width: 100%; aspect-ratio: 5/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
+        <div style="font-size: 22px; color: var(--ink-soft); line-height: 1.4;">Paredes parecem <b>chapadas</b> — difícil distinguir cantos e profundidade</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-family: var(--font-mono); font-size: 24px; color: #047857; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✓ com baked · X escuro / Y claro</div>
+        <img src="images/scene-baked.png" alt="cena com baked lighting" style="width: 100%; aspect-ratio: 5/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
+        <div style="font-size: 22px; color: var(--ink-soft); line-height: 1.4;">Cantos saltam à vista — a cena ganha <b>volume</b> e leitura espacial</div>
+      </div>
+    </div>
+    <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+      <div style="background: white; padding: 18px 24px; border-radius: 10px; box-shadow: var(--shadow-card); border-left: 4px solid var(--orange);">
+        <div style="font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Custo em runtime</div>
+        <div style="font-family: var(--font-mono); font-size: 28px; color: var(--navy); font-weight: 700;">0 ciclos</div>
+      </div>
+      <div style="background: white; padding: 18px 24px; border-radius: 10px; box-shadow: var(--shadow-card); border-left: 4px solid var(--blue);">
+        <div style="font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Custo em RAM</div>
+        <div style="font-family: var(--font-mono); font-size: 28px; color: var(--navy); font-weight: 700;">2× texturas</div>
+      </div>
+      <div style="background: var(--navy); color: white; padding: 18px 24px; border-radius: 10px;">
+        <div style="font-family: var(--font-mono); font-size: 13px; color: #fcd34d; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Princípio</div>
+        <div style="font-family: var(--font-mono); font-size: 16px; line-height: 1.3;">Trocar trabalho de runtime por trabalho de <b style="color:#fcd34d;">artista</b></div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>18</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 19 — Doors & push walls overview -->
+  <!-- ============================================================ -->
+  <section data-label="19 Portas e Push Walls">
+    <div class="slide-num">19 / 23</div>
+    <p class="eyebrow">4.7.7.4 · Portas no raycaster</p>
+    <h1 class="title">O Tile Deixa de Ser Binário</h1>
+    <div class="body-grid flip">
+      <div class="stage-3d">
+        <div class="door-stage">
+          <div class="rail"></div>
+          <div class="door-frame"></div>
+          <div class="door-leaf l" style="left: calc(50% - 136px);"></div>
+          <div class="door-leaf r" style="left: calc(50% - 8px);"></div>
+          <div class="door-ray"></div>
+        </div>
+      </div>
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Até aqui, cada passo do DDA tinha uma resposta simples: <b>vazio continua</b>, <b>parede para</b></li>
+          <li><span class="marker">▶</span>A porta cria um terceiro caso: ela ocupa o tile, mas sua <b>face pode estar no meio do caminho</b></li>
+          <li><span class="marker">▶</span>Uma porta fechada se comporta como parede; uma porta aberta se comporta como espaço</li>
+          <li><span class="marker">▶</span>No meio da animação, o raycaster precisa testar <b>a posição atual da face</b>, não só o tipo do tile</li>
+        </ul>
+        <div class="callout-grid" style="margin-top: 30px;">
+          <div class="callout">
+            <div class="k">Vazio</div>
+            <div class="v">o raio segue para o próximo tile</div>
+          </div>
+          <div class="callout orange">
+            <div class="k">Parede</div>
+            <div class="v">o raio para e vira coluna</div>
+          </div>
+          <div class="callout green">
+            <div class="k">Porta</div>
+            <div class="v">o raio compara com a abertura</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>19</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 20 — Door in scene -->
+  <!-- ============================================================ -->
+  <section data-label="20 Porta em Cena">
+    <div class="slide-num">20 / 23</div>
+    <p class="eyebrow">4.7.7.4 · Porta como tile especial</p>
+    <h1 class="title" style="margin-bottom: 34px;">A Porta Parece 3D, Mas É Um Caso do Raycaster</h1>
+    <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; flex: 1; align-items: start;">
+      <div class="media-frame">
+        <img src="foto da porta.png" alt="porta azul parcialmente aberta em Wolfenstein 3D" style="aspect-ratio: 16/10; object-fit: cover; image-rendering: pixelated;" />
+        <div class="media-caption">A porta desliza dentro do tile; o mundo continua sendo testado coluna por coluna.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 22px;">
+        <div class="callout-grid" style="grid-template-columns: 1fr 1fr; gap: 18px;">
+          <div class="callout">
+            <div class="k">Geometria</div>
+            <div class="v">não é uma malha 3D; é uma face móvel</div>
+          </div>
+          <div class="callout orange">
+            <div class="k">Fechada</div>
+            <div class="v">o raio para como em uma parede comum</div>
+          </div>
+          <div class="callout green">
+            <div class="k">Aberta</div>
+            <div class="v">parte do tile vira passagem no mapa</div>
+          </div>
+          <div class="callout">
+            <div class="k">Meio termo</div>
+            <div class="v">cada raio decide se bate ou atravessa</div>
+          </div>
+        </div>
+        <div class="formula-card" style="padding: 20px 24px;">
+          <div class="formula" style="font-size: 30px; margin-bottom: 8px;">tile == DOOR → consultar doorposition</div>
+          <div class="note">O tile informa o tipo; o array informa quanto da porta ainda está no caminho.</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>20</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 21 — Doorposition test -->
+  <!-- ============================================================ -->
+  <section data-label="21 Teste doorposition">
+    <div class="slide-num">21 / 23</div>
+    <p class="eyebrow">4.7.7.4 · Figura 4.57 — raio atravessando porta aberta</p>
+    <h1 class="title" style="margin-bottom: 34px;">O Teste Que Decide: Bate ou Atravessa?</h1>
+    <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; flex: 1; align-items: start;">
+      <div class="media-frame">
+        <img src="Figure 4.57 A ray traversing a partially opened door.png" alt="diagrama de um raio atravessando uma porta parcialmente aberta" style="aspect-ratio: 16/10; object-fit: contain;" />
+        <div class="media-caption">O raio avança pelo grid; a colisão depende de onde está a borda móvel da porta.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 22px;">
+        <div class="formula-card" style="padding: 20px 24px;">
+          <div class="math-formula compact" style="margin-bottom: 8px;">
+            A<sub>X</sub> +
+            <span class="frac"><span class="top">ystep</span><span class="bottom">2</span></span>
+            &lt; doorposition[doorIndex]
+          </div>
+          <div class="note">Se passar, o raio atravessa o tile e continua o DDA.</div>
+        </div>
+        <div class="callout-grid" style="grid-template-columns: 1fr 1fr; gap: 18px;">
+          <div class="callout">
+            <div class="k">AX</div>
+            <div class="v">posição acumulada do raio dentro do tile</div>
+          </div>
+          <div class="callout orange">
+            <div class="k">ystep / 2</div>
+            <div class="v">desloca o teste para a metade correta</div>
+          </div>
+          <div class="callout green">
+            <div class="k">doorposition</div>
+            <div class="v">borda dianteira da porta deslizante</div>
+          </div>
+          <div class="callout">
+            <div class="k">intervalo</div>
+            <div class="v">0 fechada, 0xFFFF totalmente aberta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>21</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 22 — Door code and intercept -->
+  <!-- ============================================================ -->
+  <section data-label="22 Porta no Código">
+    <div class="slide-num">22 / 23</div>
+    <p class="eyebrow">4.7.7.4 · Estado e intercept passado ao renderer</p>
+    <h1 class="title">A Porta É Estado + Um Intercept Ajustado</h1>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 42px; flex: 1; align-items: stretch;">
+      <div style="display: flex; flex-direction: column; gap: 22px;">
+        <pre class="code-panel"><span class="comment">// max number of sliding doors</span>
+<span class="kw">#define</span> MAXDOORS <span class="num">64</span>
+
+<span class="comment">// leading edge of door</span>
+<span class="comment">// 0 = closed, 0xFFFF = fully open</span>
+<span class="type">unsigned</span> doorposition[MAXDOORS];</pre>
+        <pre class="code-panel"><span class="kw">if</span> (tile == DOOR) {
+  edge = AX + ystep / <span class="num">2</span>;
+
+  <span class="kw">if</span> (edge &lt; doorposition[doorIndex])
+    <span class="ok">continue_ray</span>();
+  <span class="kw">else</span>
+    <span class="ok">hit_door</span>();
+}</pre>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 22px;">
+        <div class="formula-card">
+          <div class="math-formula compact">
+            Intercept<sub>X</sub> = A<sub>X</sub> +
+            <span class="frac"><span class="top">ystep</span><span class="bottom">2</span></span>
+          </div>
+          <div class="math-formula compact" style="margin-bottom: 12px;">
+            Intercept<sub>Y</sub> = A<sub>Y</sub> +
+            <span class="frac"><span class="top">TILE_SIZE</span><span class="bottom">2</span></span>
+          </div>
+          <div class="note">Quando o raio bate, essas coordenadas localizam a face da porta para o scaler desenhar a coluna correta.</div>
+        </div>
+        <ul class="bullets" style="gap: 18px;">
+          <li><span class="marker">▶</span>O raycaster não cria geometria nova; ele entrega um ponto de colisão mais preciso</li>
+          <li><span class="marker">▶</span>O renderer usa esse ponto para escolher textura, coluna e altura projetada</li>
+          <li><span class="marker">▶</span>A ilusão vem de tratar uma animação 2D como uma parede dinâmica</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>22</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 23 — Push walls -->
+  <!-- ============================================================ -->
+  <section data-label="23 Push Walls">
+    <div class="slide-num">23 / 23</div>
+    <p class="eyebrow">4.7.7.5 · Push walls</p>
+    <h1 class="title">Push Walls: A Mesma Ideia, Com Offset</h1>
+    <div class="body-grid flip">
+      <div class="stage-3d">
+        <div class="push-stage">
+          <div class="push-room">
+            <div class="push-grid"></div>
+            <div class="push-block"></div>
+          </div>
+          <div class="push-ray"></div>
+          <div class="push-label">intercept +=<br/>pushOffset</div>
+        </div>
+      </div>
+      <div>
+        <ul class="bullets">
+          <li><span class="marker">▶</span>Push walls também são resolvidas dentro do <b>raycaster</b>, não por um sistema físico separado</li>
+          <li><span class="marker">▶</span>Quando ativadas, elas continuam associadas ao tile original, mas sua face avança</li>
+          <li><span class="marker">▶</span>O truque é somar um <b>offset</b> nas coordenadas de intercept do raio</li>
+          <li><span class="marker">▶</span>Para o renderer, parece que a parede realmente saiu andando pelo corredor</li>
+        </ul>
+        <pre class="code-panel" style="margin-top: 28px;"><span class="kw">if</span> (tile == PUSHWALL &amp;&amp; pushwall.active) {
+  interceptX += pushOffsetX;
+  interceptY += pushOffsetY;
+  <span class="ok">hit_pushwall</span>();
+}</pre>
+        <div class="callout-grid" style="margin-top: 22px;">
+          <div class="callout">
+            <div class="k">Entrada</div>
+            <div class="v">tile especial</div>
+          </div>
+          <div class="callout orange">
+            <div class="k">Ajuste</div>
+            <div class="v">offset animado</div>
+          </div>
+          <div class="callout green">
+            <div class="k">Saída</div>
+            <div class="v">coluna renderizada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>23</span></div>
+  </section>
+
+</deck-stage>
+
+</body>
+</html>
