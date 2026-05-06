@@ -116,6 +116,86 @@
     font-size: 26px;
   }
   ul.bullets li b { font-weight: 600; color: var(--navy); }
+  .projector-bullets {
+    gap: 34px;
+  }
+  .projector-bullets li {
+    font-size: 34px;
+    line-height: 1.38;
+  }
+  .projector-bullets li .marker {
+    top: 9px;
+    font-size: 31px;
+  }
+  .mapmask-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    flex: 1;
+    align-items: stretch;
+  }
+  .mapmask-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+  }
+  .mapmask-card.good { border-top: 4px solid #047857; }
+  .mapmask-card.warn { border-top: 4px solid var(--orange); }
+  .mapmask-card.bad { border-top: 4px solid #b91c1c; }
+  .mapmask-title {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .mapmask-title.good { color: #047857; }
+  .mapmask-title.warn { color: var(--orange); }
+  .mapmask-title.bad { color: #b91c1c; }
+  .mapmask-card img {
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+  }
+  .mapmask-note {
+    margin-top: 28px;
+    min-height: 112px;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    color: var(--ink);
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .mapmask-note .mask-calc {
+    display: block;
+    margin-top: 8px;
+    font-size: 24px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+  .mapmask-lookup {
+    margin-top: 34px;
+    padding: 22px 30px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    line-height: 1.35;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .mapmask-lookup .label {
+    color: var(--orange);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
 
   .img-slot {
     border: 2px dashed var(--blue);
@@ -183,6 +263,47 @@
     height: 1px;
     background: var(--rule);
     margin: 0 24px;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 56px;
+    flex: 1;
+    align-items: start;
+  }
+  .compare-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+  }
+  .compare-label {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    min-height: 32px;
+  }
+  .compare-label.bad { color: #b91c1c; }
+  .compare-label.good { color: #047857; }
+  .compare-shot {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    image-rendering: pixelated;
+    border-radius: 12px;
+    box-shadow: var(--shadow-deep);
+    box-sizing: border-box;
+  }
+  .compare-shot.bad { border: 4px solid #fca5a5; }
+  .compare-shot.good { border: 4px solid #6ee7b7; }
+  .compare-caption {
+    font-size: 24px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    min-height: 68px;
   }
 
   /* ===== SLIDE 1 — Capa ===== */
@@ -266,67 +387,201 @@
 
   /* ===== Fisheye rays (slide 2) ===== */
   .fisheye-stage {
-    width: 520px;
-    height: 480px;
+    width: 660px;
+    height: 560px;
     position: relative;
     transform-style: preserve-3d;
-    transform: rotateX(50deg) rotateZ(-8deg);
-    animation: floaty 6s ease-in-out infinite;
+    perspective: 1200px;
+    animation: fisheyeFloat 6s ease-in-out infinite;
+  }
+  @keyframes fisheyeFloat {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-10px); }
   }
   @keyframes floaty {
     0%,100% { transform: rotateX(50deg) rotateZ(-8deg) translateZ(0); }
     50%     { transform: rotateX(50deg) rotateZ(-8deg) translateZ(18px); }
   }
   .floor-grid {
-    position: absolute; inset: 0;
+    position: absolute;
+    left: 42px; right: 42px;
+    top: 52px; bottom: 164px;
     background:
       linear-gradient(#dbeafe33, #dbeafe33),
       repeating-linear-gradient(0deg, #cbd5e1 0 1px, transparent 1px 60px),
       repeating-linear-gradient(90deg, #cbd5e1 0 1px, transparent 1px 60px);
     border-radius: 8px;
     box-shadow: var(--shadow-card);
+    transform: rotateX(58deg);
+    transform-origin: 50% 70%;
   }
   .player-dot {
     position: absolute;
-    left: 50%; bottom: 40px;
-    width: 22px; height: 22px;
+    left: 50%; bottom: 188px;
+    width: 24px; height: 24px;
     background: var(--navy);
     border-radius: 50%;
-    transform: translateX(-50%) translateZ(20px);
+    transform: translateX(-50%);
     box-shadow: 0 0 0 6px rgba(26,26,46,0.15);
+    z-index: 8;
+  }
+  .scene-wall {
+    position: absolute;
+    left: 128px; top: 74px;
+    width: 404px; height: 56px;
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.16), rgba(0,0,0,0.24)),
+      repeating-linear-gradient(90deg, #1e3a8a 0 52px, #030712 52px 58px);
+    box-shadow: var(--shadow-deep);
+    transform: perspective(900px) rotateX(52deg);
+    z-index: 3;
   }
   .ray {
     position: absolute;
-    left: 50%; bottom: 50px;
-    width: 4px;
+    left: 50%; bottom: 200px;
+    width: 5px;
     transform-origin: bottom center;
     border-radius: 2px;
+    z-index: 4;
   }
-  .ray.straight {
-    height: 380px;
-    background: linear-gradient(0deg, var(--blue), rgba(37,99,235,0.1));
-    transform: translateX(-50%) rotate(28deg) translateZ(10px);
+  .ray.fish {
+    height: 330px;
+    background: linear-gradient(0deg, #f59e0b, rgba(245,158,11,0.08));
+    opacity: 0;
+    animation: showFisheye 9s ease-in-out infinite;
   }
-  .ray.straight.l2 { transform: translateX(-50%) rotate(-28deg) translateZ(10px); }
-  .ray.curved {
-    height: 380px;
-    background: linear-gradient(0deg, var(--orange), rgba(245,158,11,0.1));
-    border-radius: 60% 60% 4px 4px / 30% 30% 4px 4px;
-    transform: translateX(-50%) rotate(50deg) translateZ(8px);
-    opacity: 0.85;
+  .ray.correct {
+    height: 300px;
+    background: linear-gradient(0deg, var(--blue), rgba(37,99,235,0.08));
+    opacity: 0;
+    animation: showCorrect 9s ease-in-out infinite;
   }
-  .ray.curved.r2 { transform: translateX(-50%) rotate(-50deg) translateZ(8px); }
+  .ray.fish.left { transform: translateX(-50%) rotate(-48deg); }
+  .ray.fish.right { transform: translateX(-50%) rotate(48deg); }
+  .ray.correct.left { transform: translateX(-50%) rotate(-28deg); }
+  .ray.correct.right { transform: translateX(-50%) rotate(28deg); }
+  .projection-plane {
+    position: absolute;
+    left: 176px; top: 172px;
+    width: 308px; height: 7px;
+    background: var(--blue);
+    border-radius: 999px;
+    box-shadow: 0 0 0 8px rgba(37,99,235,0.12);
+    transform: none;
+    opacity: 0;
+    animation: showCorrect 9s ease-in-out infinite;
+    z-index: 6;
+  }
+  .fisheye-arc {
+    position: absolute;
+    left: 152px; top: 124px;
+    width: 356px; height: 124px;
+    border-top: 7px solid #f59e0b;
+    border-radius: 50% 50% 0 0;
+    transform: none;
+    opacity: 0;
+    animation: showFisheye 9s ease-in-out infinite;
+    z-index: 5;
+  }
+  .screen-sample {
+    position: absolute;
+    left: 128px; right: 128px;
+    top: 0;
+    height: 66px;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 5px;
+    opacity: 0;
+    z-index: 10;
+  }
+  .screen-sample.fish { animation: showFisheye 9s ease-in-out infinite; }
+  .screen-sample.correct { animation: showCorrect 9s ease-in-out infinite; }
+  .screen-sample span {
+    width: 24px;
+    background: linear-gradient(180deg, #2563eb, #0f172a);
+    border-radius: 3px 3px 0 0;
+    box-shadow: inset 0 -8px 14px rgba(0,0,0,0.28);
+  }
+  .screen-sample.fish span:nth-child(1),
+  .screen-sample.fish span:nth-child(9) { height: 30px; }
+  .screen-sample.fish span:nth-child(2),
+  .screen-sample.fish span:nth-child(8) { height: 42px; }
+  .screen-sample.fish span:nth-child(3),
+  .screen-sample.fish span:nth-child(7) { height: 54px; }
+  .screen-sample.fish span:nth-child(4),
+  .screen-sample.fish span:nth-child(5),
+  .screen-sample.fish span:nth-child(6) { height: 64px; }
+  .screen-sample.correct span { height: 50px; }
+  .phase-label {
+    position: absolute;
+    left: 50%; bottom: 4px;
+    transform: translateX(-50%);
+    width: 520px;
+    height: 104px;
+    font-family: var(--font-mono);
+    z-index: 12;
+  }
+  .phase-label span {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    background: white;
+    border-radius: 8px;
+    padding: 14px 20px 16px 22px;
+    box-shadow: var(--shadow-card);
+    font-size: 18px;
+    line-height: 1.3;
+    color: var(--ink-soft);
+  }
+  .phase-label b {
+    display: block;
+    font-size: 18px;
+    color: var(--navy);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .phase-label .fish-note {
+    border-left: 5px solid #f59e0b;
+    animation: emphasizeFisheye 9s ease-in-out infinite;
+  }
+  .phase-label .correct-note {
+    border-left: 5px solid var(--blue);
+    animation: emphasizeCorrect 9s ease-in-out infinite;
+  }
+  @keyframes showFisheye {
+    0%, 36% { opacity: 1; }
+    48%, 84% { opacity: 0.12; }
+    96%, 100% { opacity: 1; }
+  }
+  @keyframes showCorrect {
+    0%, 36% { opacity: 0.12; }
+    48%, 84% { opacity: 1; }
+    96%, 100% { opacity: 0.12; }
+  }
+  @keyframes emphasizeFisheye {
+    0%, 36% { opacity: 1; transform: translateY(0) scale(1); box-shadow: var(--shadow-deep); }
+    48%, 84% { opacity: 0; transform: translateY(18px) scale(0.98); box-shadow: var(--shadow-card); }
+    96%, 100% { opacity: 1; transform: translateY(0) scale(1); box-shadow: var(--shadow-deep); }
+  }
+  @keyframes emphasizeCorrect {
+    0%, 36% { opacity: 0; transform: translateY(18px) scale(0.98); box-shadow: var(--shadow-card); }
+    48%, 84% { opacity: 1; transform: translateY(0) scale(1); box-shadow: var(--shadow-deep); }
+    96%, 100% { opacity: 0; transform: translateY(18px) scale(0.98); box-shadow: var(--shadow-card); }
+  }
   .legend {
     position: absolute;
-    bottom: -56px;
-    left: 0; right: 0;
+    bottom: 112px;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
     gap: 36px;
     font-family: var(--font-mono);
     font-size: 18px;
     color: var(--ink-soft);
-    transform: rotateX(-50deg) rotateZ(8deg);
+    z-index: 12;
   }
   .legend .swatch {
     display: inline-block; width: 14px; height: 14px;
@@ -335,87 +590,108 @@
 
   /* ===== Wall columns (slide 3) ===== */
   .wall-stage {
-    width: 600px; height: 520px;
-    transform-style: preserve-3d;
-    perspective: 1400px;
-    perspective-origin: 50% 60%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-  }
-  .wall {
-    position: relative;
-    width: 560px; height: 360px;
-    transform-style: preserve-3d;
-    transform: rotateX(8deg) rotateY(-14deg);
+    width: 660px;
+    height: 540px;
     display: flex;
-    box-shadow: var(--shadow-deep);
-    border-radius: 4px;
-    overflow: hidden;
-    animation: floaty 7s ease-in-out infinite;
-  }
-  .wall .col {
-    flex: 1;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.25)),
-      repeating-linear-gradient(0deg, #94a3b8 0 14px, #64748b 14px 16px);
-    border-right: 1px solid rgba(0,0,0,0.25);
-    position: relative;
-  }
-  .wall .col.hi {
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.30)),
-      repeating-linear-gradient(0deg, #fbbf24 0 14px, #b45309 14px 16px);
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.35), 0 0 12px rgba(245,158,11,0.5);
-    z-index: 2;
-  }
-  .wall .col.hi.b {
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.30)),
-      repeating-linear-gradient(0deg, #60a5fa 0 14px, #1e3a8a 14px 16px);
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.35), 0 0 12px rgba(37,99,235,0.5);
-  }
-  .wall .col.hi.c {
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.30)),
-      repeating-linear-gradient(0deg, #34d399 0 14px, #064e3b 14px 16px);
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.35), 0 0 12px rgba(16,185,129,0.5);
-  }
-  .col-tag {
-    position: absolute;
-    top: -44px;
-    left: 50%;
-    transform: translateX(-50%);
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
     font-family: var(--font-mono);
+  }
+  .texel-flow {
+    display: grid;
+    grid-template-columns: 220px 44px 96px 44px 150px;
+    align-items: center;
+    gap: 18px;
+  }
+  .texture-card,
+  .slice-card,
+  .screen-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    padding: 18px;
+    text-align: center;
+  }
+  .texture-card { border-top: 4px solid #64748b; }
+  .slice-card { border-top: 4px solid var(--orange); }
+  .screen-card { border-top: 4px solid var(--blue); }
+  .texel-label {
+    color: var(--ink-soft);
     font-size: 16px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 4px;
-    color: white;
-    white-space: nowrap;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
   }
-  .col-tag::after {
-    content: '';
+  .texture-grid {
+    position: relative;
+    width: 164px;
+    height: 164px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    background:
+      linear-gradient(90deg, transparent 0 70px, rgba(245,158,11,0.9) 70px 86px, transparent 86px),
+      repeating-linear-gradient(0deg, rgba(15,23,42,0.22) 0 1px, transparent 1px 20px),
+      repeating-linear-gradient(90deg, rgba(15,23,42,0.22) 0 1px, transparent 1px 20px),
+      linear-gradient(135deg, #94a3b8, #475569);
+    box-shadow: inset 0 0 0 2px #334155;
+  }
+  .texture-grid::after {
+    content: 'x = 28';
     position: absolute;
-    left: 50%; bottom: -6px;
+    left: 50%;
+    bottom: 10px;
     transform: translateX(-50%);
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 6px solid currentColor;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #fff7d6;
+    color: #92400e;
+    font-size: 15px;
+    font-weight: 700;
   }
-  .col-tag.a { background: #b45309; }
-  .col-tag.a::after { color: #b45309; }
-  .col-tag.b { background: #1e40af; }
-  .col-tag.b::after { color: #1e40af; }
-  .col-tag.c { background: #047857; }
-  .col-tag.c::after { color: #047857; }
+  .flow-arrow {
+    color: var(--blue);
+    font-size: 36px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .texel-slice {
+    width: 36px;
+    height: 190px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 3px #92400e, var(--shadow-deep);
+    display: flex;
+    flex-direction: column;
+  }
+  .texel-slice span,
+  .screen-column span {
+    flex: 1;
+    display: block;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.24);
+  }
+  .screen-column {
+    width: 56px;
+    height: 320px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 3px #1e40af, var(--shadow-deep);
+    display: flex;
+    flex-direction: column;
+  }
   .wall-caption {
-    margin-top: 36px;
+    align-self: center;
+    width: 560px;
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 22px;
+    font-size: 24px;
+    line-height: 1.35;
     color: var(--ink);
     background: white;
-    padding: 14px 24px;
+    padding: 16px 24px;
     border-radius: 8px;
     box-shadow: var(--shadow-card);
     border-left: 4px solid var(--blue);
@@ -481,6 +757,153 @@
     overflow: hidden;
   }
   .pixel-col span { flex: 1; display: block; box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25); }
+
+  .scaler-clean {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    overflow: visible;
+  }
+  .scaler-example-label {
+    align-self: flex-start;
+    margin-left: 18px;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #b45309;
+  }
+  .scaler-example-label span {
+    display: block;
+    margin-top: 6px;
+    color: var(--ink-soft);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+  .scaler-diagram {
+    display: grid;
+    grid-template-columns: 150px 42px 300px 42px 118px;
+    align-items: center;
+    gap: 20px;
+    min-height: 430px;
+    font-family: var(--font-mono);
+    margin-left: -8px;
+  }
+  .scaler-input,
+  .scaler-output {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .scaler-input {
+    border-top: 4px solid var(--orange);
+  }
+  .scaler-output {
+    border-top: 4px solid var(--blue);
+  }
+  .scaler-input .label,
+  .scaler-output .label {
+    color: var(--ink-soft);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .scaler-input .value {
+    color: #b45309;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .scaler-input .unit,
+  .scaler-output .unit {
+    color: var(--navy);
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 8px;
+    line-height: 1.2;
+  }
+  .scaler-flow-arrow {
+    color: var(--blue);
+    font-size: 36px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .scaler-table {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-deep);
+  }
+  .scaler-row {
+    display: grid;
+    grid-template-columns: 118px 1fr;
+    align-items: center;
+    gap: 14px;
+    min-height: 46px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: var(--ink-soft);
+    box-shadow: inset 0 0 0 1px #e2e8f0;
+    font-size: 17px;
+  }
+  .scaler-row .name {
+    color: var(--blue);
+    font-weight: 800;
+  }
+  .scaler-row .ops {
+    letter-spacing: 0.04em;
+  }
+  .scaler-row.active {
+    min-height: 62px;
+    background: #fff7d6;
+    color: #78350f;
+    box-shadow: inset 0 0 0 2px #f59e0b, 0 12px 24px rgba(180,83,9,0.22);
+  }
+  .scaler-row.active .name {
+    color: #b45309;
+    font-size: 20px;
+  }
+  .output-column {
+    width: 58px;
+    height: 300px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px #1f2937, var(--shadow-deep);
+  }
+  .output-column span {
+    flex: 1;
+    display: block;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.28);
+  }
+  .scaler-clean-caption {
+    align-self: center;
+    width: 650px;
+    padding: 18px 22px;
+    background: #fff7d6;
+    border-left: 4px solid var(--orange);
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    font-family: var(--font-mono);
+    font-size: 21px;
+    line-height: 1.35;
+    color: var(--navy);
+    text-align: center;
+  }
+  .scaler-clean-caption b { color: #b45309; }
 
   /* ===== Balance scale (slide 5) — REWORKED ===== */
   .balance-stage {
@@ -649,113 +1072,273 @@
   /* Floor label captions */
   .balance-floor {
     position: absolute;
-    left: 50%; bottom: 16px;
+    left: 50%; bottom: -24px;
     transform: translateX(-50%);
-    display: flex; gap: 60px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    min-width: 380px;
     font-family: var(--font-mono);
     font-size: 16px;
     color: var(--ink-soft);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
+  .balance-floor span {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    text-align: center;
+  }
   .balance-floor span b { color: var(--navy); font-size: 18px; }
+  .balance-floor .trade-arrow {
+    color: var(--blue);
+    font-size: 22px;
+    font-weight: 700;
+  }
 
   /* ===== Deferred batch (slide 6) ===== */
   .batch-stage {
-    width: 560px; height: 480px;
-    transform-style: preserve-3d;
-    transform: rotateY(-18deg) rotateX(8deg);
-    animation: floaty 7s ease-in-out infinite;
+    width: 640px;
+    height: 520px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 22px;
+    font-family: var(--font-mono);
   }
-  .batch-row {
+  .batch-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+  .batch-panel {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    padding: 20px;
+  }
+  .batch-panel.before { border-top: 4px solid #b91c1c; }
+  .batch-panel.after { border-top: 4px solid #047857; }
+  .batch-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .batch-panel.before .batch-title { color: #b91c1c; }
+  .batch-panel.after .batch-title { color: #047857; }
+  .batch-columns {
     display: flex;
     gap: 6px;
-    margin-bottom: 32px;
+    align-items: end;
+    justify-content: center;
+    min-height: 190px;
   }
-  .batch-row .bcol {
-    width: 44px; height: 280px;
+  .batch-col {
+    width: 24px;
+    height: 170px;
     border-radius: 4px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   }
-  .bcol.b0 { background: linear-gradient(180deg, #fca5a5, #b91c1c); }
-  .bcol.b1 { background: linear-gradient(180deg, #fcd34d, #b45309); }
-  .bcol.b2 { background: linear-gradient(180deg, #86efac, #166534); }
-  .bcol.b3 { background: linear-gradient(180deg, #93c5fd, #1e40af); }
-  .batch-arrow {
-    width: 100%; height: 50px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-mono); font-size: 18px; color: var(--ink-soft);
+  .batch-col.c0 { background: linear-gradient(180deg, #fca5a5, #b91c1c); }
+  .batch-col.c1 { background: linear-gradient(180deg, #fcd34d, #b45309); }
+  .batch-col.c2 { background: linear-gradient(180deg, #86efac, #166534); }
+  .batch-col.c3 { background: linear-gradient(180deg, #93c5fd, #1e40af); }
+  .write-ticks {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .write-ticks span {
+    width: 24px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .buffer-box {
+    position: relative;
+    margin-top: 14px;
+    padding: 14px 12px;
+    border: 3px solid #f59e0b;
+    border-radius: 10px;
+    background: #fff7d6;
+  }
+  .buffer-box::before {
+    content: 'buffer';
+    position: absolute;
+    top: -15px;
+    left: 18px;
+    padding: 2px 8px;
+    background: white;
+    color: #b45309;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .batch-ops {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .batch-ops span {
+    background: #dcfce7;
+    color: #047857;
+    border-radius: 5px;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .batch-note {
+    margin-top: 16px;
+    color: var(--ink-soft);
+    font-size: 18px;
+    line-height: 1.35;
+    text-align: center;
+  }
+  .batch-result {
+    align-self: center;
+    width: 560px;
+    padding: 18px 22px;
+    background: var(--navy);
+    color: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    text-align: center;
+    font-size: 22px;
+    line-height: 1.35;
+  }
+  .batch-result b { color: #fcd34d; }
+  .mini-arrow {
+    width: 100%;
+    height: 24px;
+    margin: 10px 0 2px;
     position: relative;
   }
-  .batch-arrow::before {
+  .mini-arrow::before {
     content: '';
     position: absolute;
-    left: 8%; right: 8%; top: 50%;
-    height: 3px;
+    left: 16%;
+    right: 16%;
+    top: 11px;
     background: var(--orange);
+    height: 3px;
     border-radius: 2px;
   }
-  .batch-arrow span { background: var(--bg); padding: 0 18px; z-index: 1; position: relative; }
-  .vga-write {
-    width: 360px; height: 80px;
-    margin: 0 auto;
-    background: var(--navy);
-    color: #fcd34d;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-mono); font-size: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-    letter-spacing: 0.05em;
+  .mini-arrow::after {
+    content: '';
+    position: absolute;
+    right: 15%;
+    top: 6px;
+    border-left: 10px solid var(--orange);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
   }
 
   /* ===== VGA banks (slide 7) ===== */
   .banks-stage {
-    width: 560px; height: 480px;
-    transform-style: preserve-3d;
-    transform: rotateX(48deg) rotateZ(-14deg);
-    animation: floaty 7s ease-in-out infinite;
-  }
-  .banks-grid {
-    display: grid;
-    grid-template-columns: repeat(16, 32px);
-    gap: 2px;
-    transform-style: preserve-3d;
-  }
-  .banks-grid div {
-    height: 32px;
-    border-radius: 2px;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
-  }
-  .banks-grid div[data-b="0"] { background: #ef4444; }
-  .banks-grid div[data-b="1"] { background: #f59e0b; }
-  .banks-grid div[data-b="2"] { background: #10b981; }
-  .banks-grid div[data-b="3"] { background: #2563eb; }
-  .mask-bits {
-    position: absolute;
-    top: -40px; left: 50%;
-    transform: translateX(-50%) translateZ(80px);
-    display: flex; gap: 8px;
+    width: 620px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 24px;
     font-family: var(--font-mono);
-    font-size: 24px;
-    font-weight: 600;
   }
-  .mask-bits span {
-    width: 44px; height: 44px;
+  .mask-title {
+    align-self: center;
+    padding: 10px 18px;
     background: white;
+    border-left: 4px solid var(--orange);
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
     color: var(--navy);
-    border: 2px solid var(--navy);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    animation: bitFlick 2.4s ease-in-out infinite;
+    font-size: 21px;
+    font-weight: 700;
   }
-  .mask-bits span:nth-child(2) { animation-delay: 0.3s; }
-  .mask-bits span:nth-child(3) { animation-delay: 0.6s; }
-  .mask-bits span:nth-child(4) { animation-delay: 0.9s; }
-  @keyframes bitFlick {
-    0%,40%,100% { background: white; color: var(--navy); }
-    50%,80% { background: var(--orange); color: white; border-color: var(--orange); }
+  .mask-title b { color: #b45309; }
+  .plane-mask-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    align-items: stretch;
   }
+  .plane-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    padding: 20px 14px;
+    text-align: center;
+    position: relative;
+  }
+  .plane-card.off {
+    opacity: 0.56;
+    filter: grayscale(0.65);
+  }
+  .plane-bit {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 800;
+    box-shadow: inset 0 0 0 2px currentColor;
+  }
+  .plane-card.on .plane-bit {
+    background: var(--orange);
+    color: white;
+  }
+  .plane-card.off .plane-bit {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+  .plane-name {
+    color: var(--navy);
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+  .plane-column {
+    display: grid;
+    grid-template-rows: repeat(6, 28px);
+    gap: 5px;
+    margin: 0 auto;
+    width: 68px;
+  }
+  .plane-column span {
+    border-radius: 3px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+  }
+  .plane-card.off .plane-column span {
+    background: #cbd5e1 !important;
+  }
+  .plane-state {
+    margin-top: 16px;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .plane-card.on .plane-state { color: #047857; }
+  .plane-card.off .plane-state { color: #64748b; }
 
   /* ===== Lit corridor (slide 8) ===== */
   .corridor-stage {
@@ -910,13 +1493,140 @@
     62%, 84% { opacity: 1; }
   }
 
-  /* ===== Door (slide 9) ===== */
+  /* ===== Sliding door tile (slide 19) ===== */
   .door-stage {
-    width: 520px; height: 480px;
-    transform-style: preserve-3d;
-    transform: rotateY(-25deg) rotateX(4deg);
-    animation: floaty 7s ease-in-out infinite;
+    position: relative;
+    width: 560px; height: 460px;
   }
+  .door-world {
+    position: absolute;
+    left: 0; top: 4px;
+    width: 560px; height: 380px;
+    transform-style: preserve-3d;
+    transform: none;
+    animation: doorWorldFloat 7s ease-in-out infinite;
+  }
+  @keyframes doorWorldFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .door-tile-floor {
+    position: absolute;
+    left: 68px; top: 118px;
+    width: 424px; height: 236px;
+    background:
+      linear-gradient(90deg, rgba(37,99,235,0.14) 0 2px, transparent 2px 25%),
+      linear-gradient(0deg, rgba(37,99,235,0.13) 0 2px, transparent 2px 25%),
+      linear-gradient(135deg, #f8fbff, #eaf2fb);
+    border: 3px solid rgba(37,99,235,0.32);
+    border-radius: 10px;
+    box-shadow: 0 34px 54px rgba(15,23,42,0.13);
+  }
+  .door-tile-active {
+    position: absolute;
+    left: 198px; top: 190px;
+    width: 164px; height: 112px;
+    background:
+      repeating-linear-gradient(135deg, rgba(245,158,11,0.20) 0 10px, rgba(245,158,11,0.08) 10px 20px),
+      rgba(245,158,11,0.16);
+    border: 4px solid #f59e0b;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.75);
+  }
+  .door-slot {
+    position: absolute;
+    left: 212px; top: 184px;
+    width: 150px; height: 12px;
+    border-radius: 999px;
+    background: rgba(15,23,42,0.24);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.55);
+  }
+  .door-face {
+    position: absolute;
+    left: 244px; top: 62px;
+    width: 76px; height: 176px;
+    transform-origin: center bottom;
+    transform: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 2px, transparent 2px 18px),
+      linear-gradient(180deg, #fbbf24, #b45309);
+    border: 2px solid #92400e;
+    border-radius: 3px;
+    box-shadow: 0 20px 28px rgba(146,64,14,0.28);
+    animation: doorFaceSlide 5.5s ease-in-out infinite;
+  }
+  .door-face::after {
+    content: none;
+  }
+  @keyframes doorFaceSlide {
+    0%, 18%, 100% { left: 244px; width: 76px; opacity: 1; }
+    48%, 72% { left: 312px; width: 36px; opacity: 0.92; }
+  }
+  .door-wall {
+    position: absolute;
+    top: 70px;
+    width: 142px; height: 152px;
+    transform-origin: center bottom;
+    transform: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0 2px, transparent 2px 20px),
+      linear-gradient(180deg, #64748b, #334155);
+    border-radius: 4px;
+    box-shadow: 0 22px 32px rgba(15,23,42,0.2);
+  }
+  .door-wall.left {
+    left: 88px;
+    clip-path: none;
+  }
+  .door-wall.right {
+    left: 330px;
+    clip-path: none;
+  }
+  .door-ray {
+    position: absolute;
+    left: 268px; top: 232px;
+    width: 24px; height: 116px;
+    background: linear-gradient(180deg, rgba(245,158,11,0.82), rgba(37,99,235,0.82));
+    border-radius: 999px;
+    box-shadow: 0 0 18px rgba(245,158,11,0.38);
+    animation: rayDoorPulse 5.5s ease-in-out infinite;
+  }
+  .door-ray::before {
+    content: none;
+  }
+  .door-hit {
+    position: absolute;
+    left: 266px; top: 214px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: 4px solid white;
+    box-shadow: 0 0 0 7px rgba(245,158,11,0.18), 0 10px 20px rgba(15,23,42,0.18);
+    animation: doorHitMove 5.5s ease-in-out infinite;
+  }
+  @keyframes doorHitMove {
+    0%, 18%, 100% { left: 266px; top: 214px; opacity: 1; }
+    48%, 72% { left: 326px; top: 216px; opacity: 0.85; }
+  }
+  @keyframes rayDoorPulse {
+    0%, 18%, 100% { opacity: 0.72; }
+    48%, 72% { opacity: 1; }
+  }
+  .door-caption {
+    position: absolute;
+    left: 56px; right: 56px; bottom: 0;
+    background: white;
+    border-left: 5px solid #f59e0b;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: var(--shadow-card);
+    font-family: var(--font-mono);
+    font-size: 20px;
+    line-height: 1.3;
+    color: var(--ink);
+    text-align: center;
+  }
+  .door-caption b { color: #b45309; }
   .door-frame {
     position: absolute;
     left: 50%; top: 40px;
@@ -926,6 +1636,7 @@
     border-radius: 6px 6px 0 0;
     box-shadow: var(--shadow-deep);
     overflow: hidden;
+    display: none;
   }
   .door-frame::before {
     content:'';
@@ -963,16 +1674,7 @@
     transform: translateX(-50%);
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-  .door-ray {
-    position: absolute;
-    left: 30px; top: 220px;
-    width: 460px; height: 4px;
-    background: linear-gradient(90deg, var(--orange), rgba(245,158,11,0));
-    transform: rotateZ(-6deg);
-    border-radius: 2px;
-    box-shadow: 0 0 16px rgba(245,158,11,0.6);
-    animation: rayPulse 2s ease-in-out infinite;
+    display: none;
   }
   @keyframes rayPulse {
     0%,100% { opacity: 0.4; }
@@ -1145,12 +1847,56 @@
     height: 460px;
     position: relative;
     transform-style: preserve-3d;
-    perspective: 1200px;
+    perspective: 900px;
+  }
+  .push-wrap{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: -18px;
+  }
+  .push-caption{
+    width: 600px;
+    background: rgba(255,255,255,0.97);
+    border: 1px solid rgba(37,99,235,0.18);
+    border-radius: 16px;
+    padding: 16px 18px 14px;
+    box-shadow: 0 18px 44px rgba(15,23,42,0.12);
+    color: var(--navy);
+  }
+  .push-caption .t{
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .push-caption .eq{
+    font-family: var(--font-mono);
+    font-size: 26px;
+    line-height: 1.05;
+    margin-bottom: 10px;
+  }
+  .push-caption .eq b{ color: #d97706; }
+  .push-caption .mini{
+    display: grid;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.25;
+    color: rgba(15,23,42,0.86);
+  }
+  .push-caption .mini .k{
+    display: inline-block;
+    min-width: 88px;
+    font-weight: 800;
+    color: rgba(15,23,42,0.62);
   }
   .push-room {
     position: absolute;
     inset: 44px 40px 34px;
-    transform: rotateX(58deg) rotateZ(-24deg);
+    transform: rotateX(46deg) rotateZ(-24deg) translateY(-8px);
     transform-style: preserve-3d;
   }
   .push-grid {
@@ -1255,7 +2001,7 @@
   <!-- ============================================================ -->
   <section data-label="01 Capa" class="cover">
     <div class="slide-num">01 / 23</div>
-    <p class="eyebrow">Black Book · Seção 4.7</p>
+    <p class="eyebrow">Black Book 4.7 · Raycasting do Wolfenstein 3D</p>
     <div class="stage-3d">
       <div class="cube">
         <div class="face brick f-front"></div>
@@ -1276,11 +2022,11 @@
   <!-- ============================================================ -->
   <section data-label="02 Fisheye">
     <div class="slide-num">02 / 23</div>
-    <p class="eyebrow">4.7.6 · Correção do Efeito Fisheye</p>
+    <p class="eyebrow">4.7.6 · Distância direta d vs distância projetada z</p>
     <h1 class="title">Correção do Efeito Fisheye</h1>
     <div class="body-grid">
       <div>
-        <ul class="bullets">
+        <ul class="bullets projector-bullets">
           <li><span class="marker">▶</span>Raios medidos com a distância <b>direta (d)</b> causam distorção nas bordas</li>
           <li><span class="marker">▶</span>Solução: usar a distância <b>projetada (z)</b> no eixo do jogador</li>
           <li><span class="marker">▶</span>Linhas retas das paredes ficam <b>geometricamente corretas</b></li>
@@ -1289,15 +2035,28 @@
       </div>
       <div class="stage-3d">
         <div class="fisheye-stage">
+          <div class="screen-sample fish">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="screen-sample correct">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
           <div class="floor-grid"></div>
-          <div class="ray straight"></div>
-          <div class="ray straight l2"></div>
-          <div class="ray curved"></div>
-          <div class="ray curved r2"></div>
+          <div class="scene-wall"></div>
+          <div class="fisheye-arc"></div>
+          <div class="projection-plane"></div>
+          <div class="ray fish left"></div>
+          <div class="ray fish right"></div>
+          <div class="ray correct left"></div>
+          <div class="ray correct right"></div>
           <div class="player-dot"></div>
           <div class="legend">
-            <span><span class="swatch" style="background:#2563eb"></span>z (correto)</span>
             <span><span class="swatch" style="background:#f59e0b"></span>d (fisheye)</span>
+            <span><span class="swatch" style="background:#2563eb"></span>z (correto)</span>
+          </div>
+          <div class="phase-label">
+            <span class="fish-note"><b>1. fisheye</b>d mede o raio direto; bordas ficam esticadas.</span>
+            <span class="correct-note"><b>2. correto</b>z projeta no eixo; a parede fica reta.</span>
           </div>
         </div>
       </div>
@@ -1310,7 +2069,7 @@
   <!-- ============================================================ -->
   <section data-label="03 Map → Player Space">
     <div class="slide-num">03 / 23</div>
-    <p class="eyebrow">Figura 4.53 · do mapa ao jogador</p>
+    <p class="eyebrow">Figura 4.53 · Transformar coordenadas para o eixo do jogador</p>
     <h1 class="title" style="margin-bottom: 34px;">Map Space → Player Space</h1>
     <div style="display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 42px; flex: 1; align-items: start;">
       <div style="background: white; padding: 26px; border-radius: 12px; box-shadow: var(--shadow-deep); display: flex; align-items: center; justify-content: center;">
@@ -1364,18 +2123,18 @@
   <!-- ============================================================ -->
   <section data-label="04 Comparativo Cena 1">
     <div class="slide-num">04 / 23</div>
-    <p class="eyebrow">Comparativo · cena com parede longa</p>
+    <p class="eyebrow">Comparativo · Parede longa revela distorção nas bordas</p>
     <h1 class="title">Antes &amp; Depois — Parede Longa</h1>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; flex: 1; align-items: center;">
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <div style="font-family: var(--font-mono); font-size: 26px; color: #b91c1c; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✗ com fisheye · distância d</div>
-        <img src="images/fisheye-before-1.png" alt="cena com fisheye" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
-        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">A parede curva visivelmente nas bordas — tijolos esticam onde deveriam estar retos</div>
+    <div class="compare-grid">
+      <div class="compare-panel">
+        <div class="compare-label bad">✗ com fisheye · distância d</div>
+        <img class="compare-shot bad" src="images/fisheye-before-1.png" alt="cena com fisheye" />
+        <div class="compare-caption">A parede curva visivelmente nas bordas — tijolos esticam onde deveriam estar retos</div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <div style="font-family: var(--font-mono); font-size: 26px; color: #047857; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✓ corrigido · distância z</div>
-        <img src="images/fisheye-after-1.png" alt="cena corrigida" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
-        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">Linhas retas, perspectiva geométrica correta — a sala parece sólida</div>
+      <div class="compare-panel">
+        <div class="compare-label good">✓ corrigido · distância z</div>
+        <img class="compare-shot good" src="images/fisheye-after-1.png" alt="cena corrigida" />
+        <div class="compare-caption">Linhas retas, perspectiva geométrica correta — a sala parece sólida</div>
       </div>
     </div>
     <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>04</span></div>
@@ -1386,18 +2145,18 @@
   <!-- ============================================================ -->
   <section data-label="05 Comparativo Cena 2">
     <div class="slide-num">05 / 23</div>
-    <p class="eyebrow">Comparativo · cena com porta</p>
+    <p class="eyebrow">Comparativo · Porta central expõe erro de perspectiva</p>
     <h1 class="title">Antes &amp; Depois — Porta ao Centro</h1>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; flex: 1; align-items: center;">
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <div style="font-family: var(--font-mono); font-size: 26px; color: #b91c1c; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✗ com fisheye · distância d</div>
-        <img src="images/fisheye-before-2.png" alt="porta com fisheye" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
-        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">A porta e as paredes laterais aparecem deformadas, esticadas para fora</div>
+    <div class="compare-grid">
+      <div class="compare-panel">
+        <div class="compare-label bad">✗ com fisheye · distância d</div>
+        <img class="compare-shot bad" src="images/fisheye-before-2.png" alt="porta com fisheye" />
+        <div class="compare-caption">A porta e as paredes laterais aparecem deformadas, esticadas para fora</div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <div style="font-family: var(--font-mono); font-size: 26px; color: #047857; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✓ corrigido · distância z</div>
-        <img src="images/fisheye-after-2.png" alt="porta corrigida" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
-        <div style="font-size: 24px; color: var(--ink-soft); line-height: 1.4;">Porta retangular, paredes paralelas — leitura espacial natural</div>
+      <div class="compare-panel">
+        <div class="compare-label good">✓ corrigido · distância z</div>
+        <img class="compare-shot good" src="images/fisheye-after-2.png" alt="porta corrigida" />
+        <div class="compare-caption">Porta retangular, paredes paralelas — leitura espacial natural</div>
       </div>
     </div>
     <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>05</span></div>
@@ -1408,26 +2167,50 @@
   <!-- ============================================================ -->
   <section data-label="06 Paredes">
     <div class="slide-num">06 / 23</div>
-    <p class="eyebrow">4.7.7 · Desenho de paredes</p>
+    <p class="eyebrow">4.7.7 · Cada coluna da parede vira texel escalado</p>
     <h1 class="title">Desenhando Paredes em um 386</h1>
     <div class="body-grid flip">
       <div class="stage-3d">
         <div class="wall-stage">
-          <div class="wall">
-            <div class="col"></div><div class="col"></div>
-            <div class="col hi"><div class="col-tag a">A</div></div>
-            <div class="col"></div><div class="col"></div>
-            <div class="col hi b"><div class="col-tag b">B</div></div>
-            <div class="col"></div><div class="col"></div>
-            <div class="col hi c"><div class="col-tag c">C</div></div>
-            <div class="col"></div><div class="col"></div>
-            <div class="col"></div><div class="col"></div>
+          <div class="texel-flow">
+            <div class="texture-card">
+              <div class="texel-label">textura 64×64</div>
+              <div class="texture-grid"></div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="slice-card">
+              <div class="texel-label">fatia</div>
+              <div class="texel-slice">
+                <span style="background:#1e3a8a"></span>
+                <span style="background:#2563eb"></span>
+                <span style="background:#f59e0b"></span>
+                <span style="background:#b45309"></span>
+                <span style="background:#0f172a"></span>
+                <span style="background:#2563eb"></span>
+                <span style="background:#f59e0b"></span>
+                <span style="background:#1e293b"></span>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="screen-card">
+              <div class="texel-label">tela</div>
+              <div class="screen-column">
+                <span style="background:#1e3a8a"></span>
+                <span style="background:#2563eb"></span>
+                <span style="background:#f59e0b"></span>
+                <span style="background:#b45309"></span>
+                <span style="background:#0f172a"></span>
+                <span style="background:#2563eb"></span>
+                <span style="background:#f59e0b"></span>
+                <span style="background:#1e293b"></span>
+              </div>
+            </div>
           </div>
-          <div class="wall-caption">cada coluna = <b>1 texel escalado verticalmente</b></div>
+          <div class="wall-caption">o raycaster escolhe uma <b>fatia vertical</b> da textura e a estica até a altura da parede na tela</div>
         </div>
       </div>
       <div>
-        <ul class="bullets">
+        <ul class="bullets projector-bullets">
           <li><span class="marker">▶</span>Altura da coluna calculada → desenhar coluna de <b>texels escalada</b></li>
           <li><span class="marker">▶</span>CPU 386 é limitada: escalar 64 texels é <b>caro</b></li>
           <li><span class="marker">▶</span>Wolfenstein supera os engines da época com <b>2 otimizações</b></li>
@@ -1443,7 +2226,7 @@
   <!-- ============================================================ -->
   <section data-label="07 Compiled Scalers">
     <div class="slide-num">07 / 23</div>
-    <p class="eyebrow">4.7.7.1 · Otimização #1</p>
+    <p class="eyebrow">4.7.7.1 · Trocar cálculo por scalers pré-compilados</p>
     <h1 class="title">Compiled Scalers</h1>
     <div class="body-grid">
       <div>
@@ -1466,24 +2249,39 @@
         </div>
       </div>
       <div class="stage-3d">
-        <div class="scaler-stage">
-          <div class="scaler-deck">
-            <div class="chip" style="transform: translateZ(-160px);"><span class="num">scale_064</span><span class="ops">mov · mov · mov</span></div>
-            <div class="chip" style="transform: translateZ(-80px);"><span class="num">scale_098</span><span class="ops">mov · mov · mov · mov</span></div>
-            <div class="chip accent" style="transform: translateZ(0px);"><span class="num">scale_128</span><span class="ops">mov · mov · mov · mov · mov</span></div>
-            <div class="chip" style="transform: translateZ(80px);"><span class="num">scale_162</span><span class="ops">mov · mov · mov</span></div>
-            <div class="chip" style="transform: translateZ(160px);"><span class="num">scale_200</span><span class="ops">mov · mov · mov · mov</span></div>
-            <div class="pixel-col">
-              <span style="background:#1a1a2e"></span>
-              <span style="background:#2563eb"></span>
-              <span style="background:#f59e0b"></span>
-              <span style="background:#b45309"></span>
-              <span style="background:#1a1a2e"></span>
-              <span style="background:#2563eb"></span>
-              <span style="background:#f59e0b"></span>
-              <span style="background:#1a1a2e"></span>
+        <div class="scaler-stage scaler-clean">
+          <div class="scaler-example-label">Exemplo prático</div>
+          <div class="scaler-diagram">
+            <div class="scaler-input">
+              <div class="label">altura calculada</div>
+              <div class="value">128</div>
+              <div class="unit">pixels<br/>na tela</div>
+            </div>
+            <div class="scaler-flow-arrow">→</div>
+            <div class="scaler-table">
+              <div class="scaler-row"><span class="name">scale_064</span><span class="ops">mov · mov · mov</span></div>
+              <div class="scaler-row"><span class="name">scale_098</span><span class="ops">mov · mov · mov</span></div>
+              <div class="scaler-row active"><span class="name">scale_128</span><span class="ops">mov · mov · mov · mov</span></div>
+              <div class="scaler-row"><span class="name">scale_162</span><span class="ops">mov · mov · mov</span></div>
+              <div class="scaler-row"><span class="name">scale_200</span><span class="ops">mov · mov · mov</span></div>
+            </div>
+            <div class="scaler-flow-arrow">→</div>
+            <div class="scaler-output">
+              <div class="label">resultado</div>
+              <div class="output-column">
+                <span style="background:#1a1a2e"></span>
+                <span style="background:#2563eb"></span>
+                <span style="background:#f59e0b"></span>
+                <span style="background:#b45309"></span>
+                <span style="background:#1a1a2e"></span>
+                <span style="background:#2563eb"></span>
+                <span style="background:#f59e0b"></span>
+                <span style="background:#1a1a2e"></span>
+              </div>
+              <div class="unit">coluna<br/>desenhada</div>
             </div>
           </div>
+          <div class="scaler-clean-caption"><b>scale_128</b> já contém a sequência de cópias. Sem loop interno.</div>
         </div>
       </div>
     </div>
@@ -1495,7 +2293,7 @@
   <!-- ============================================================ -->
   <section data-label="08 Scalers em Cena">
     <div class="slide-num">08 / 23</div>
-    <p class="eyebrow">4.7.7.1 · Onde os scalers atuam</p>
+    <p class="eyebrow">4.7.7.1 · Um scaler pronto para cada altura de coluna</p>
     <h1 class="title">Cada Coluna, um Scaler Pronto</h1>
     <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 56px; flex: 1; align-items: center;">
       <div style="position: relative;">
@@ -1524,7 +2322,7 @@
   <!-- ============================================================ -->
   <section data-label="09 Scalers no Código">
     <div class="slide-num">09 / 23</div>
-    <p class="eyebrow">4.7.7.1 · Genérico vs. Hard-coded</p>
+    <p class="eyebrow">4.7.7.1 · Loop genérico substituído por bytes x86 emitidos</p>
     <h1 class="title">Do Loop Genérico ao x86 Compilado</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0;">
       <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0;">
@@ -1566,7 +2364,7 @@
   <!-- ============================================================ -->
   <section data-label="10 RAM vs CPU">
     <div class="slide-num">10 / 23</div>
-    <p class="eyebrow">Tradeoff de engenharia</p>
+    <p class="eyebrow">4.7.7.1 · Gastar RAM para economizar instruções por pixel</p>
     <h1 class="title">RAM vs CPU — O Tradeoff Clássico</h1>
     <div class="body-grid flip">
       <div class="stage-3d">
@@ -1595,8 +2393,9 @@
               </div>
             </div>
             <div class="balance-floor">
-              <span><b>+ pesado</b></span>
-              <span><b>− leve</b></span>
+              <span><b>custo em RAM</b>mais funções</span>
+              <div class="trade-arrow">↔</div>
+              <span><b>ganho de CPU</b>menos instruções</span>
             </div>
           </div>
         </div>
@@ -1619,7 +2418,7 @@
   <!-- ============================================================ -->
   <section data-label="11 Deferred Drawing">
     <div class="slide-num">11 / 23</div>
-    <p class="eyebrow">4.7.7.2 · Otimização #2</p>
+    <p class="eyebrow">4.7.7.2 · Adiar colunas para desenhar em lotes</p>
     <h1 class="title">Deferred Column Drawing</h1>
     <div class="body-grid">
       <div>
@@ -1636,14 +2435,37 @@
       </div>
       <div class="stage-3d">
         <div class="batch-stage">
-          <div class="batch-row">
-            <div class="bcol b0"></div><div class="bcol b1"></div>
-            <div class="bcol b2"></div><div class="bcol b3"></div>
-            <div class="bcol b0"></div><div class="bcol b1"></div>
-            <div class="bcol b2"></div><div class="bcol b3"></div>
+          <div class="batch-compare">
+            <div class="batch-panel before">
+              <div class="batch-title">Antes · direto</div>
+              <div class="batch-columns">
+                <div class="batch-col c0"></div><div class="batch-col c1"></div>
+                <div class="batch-col c2"></div><div class="batch-col c3"></div>
+                <div class="batch-col c0"></div><div class="batch-col c1"></div>
+                <div class="batch-col c2"></div><div class="batch-col c3"></div>
+              </div>
+              <div class="write-ticks">
+                <span>W</span><span>W</span><span>W</span><span>W</span>
+                <span>W</span><span>W</span><span>W</span><span>W</span>
+              </div>
+              <div class="batch-note">8 colunas saem como 8 escritas pequenas</div>
+            </div>
+            <div class="batch-panel after">
+              <div class="batch-title">Depois · buffer</div>
+              <div class="buffer-box">
+                <div class="batch-columns">
+                  <div class="batch-col c0"></div><div class="batch-col c1"></div>
+                  <div class="batch-col c2"></div><div class="batch-col c3"></div>
+                  <div class="batch-col c0"></div><div class="batch-col c1"></div>
+                  <div class="batch-col c2"></div><div class="batch-col c3"></div>
+                </div>
+              </div>
+              <div class="mini-arrow"></div>
+              <div class="batch-ops"><span>pass 1</span><span>pass 2</span><span>pass 3</span></div>
+              <div class="batch-note">as mesmas 8 colunas viram até 3 operações VGA</div>
+            </div>
           </div>
-          <div class="batch-arrow"><span>batch · 3 ops</span></div>
-          <div class="vga-write">VGA WRITE → 8 colunas</div>
+          <div class="batch-result"><b>Deferred</b>: guarda colunas similares agora, escreve o lote depois.</div>
         </div>
       </div>
     </div>
@@ -1655,7 +2477,7 @@
   <!-- ============================================================ -->
   <section data-label="12 Buffer vs Direto">
     <div class="slide-num">12 / 23</div>
-    <p class="eyebrow">4.7.7.2 · Loop principal</p>
+    <p class="eyebrow">4.7.7.2 · Agrupar colunas antes de chamar o renderer</p>
     <h1 class="title">Bufferizar Antes de Desenhar</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0;">
       <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0;">
@@ -1693,56 +2515,53 @@
   <!-- ============================================================ -->
   <section data-label="13 VGA Banks">
     <div class="slide-num">13 / 23</div>
-    <p class="eyebrow">4.7.7.2 · ScalePost &amp; VGA</p>
+    <p class="eyebrow">4.7.7.2 · Máscaras VGA controlam quais pixels são escritos</p>
     <h1 class="title">VGA Plane Masking</h1>
     <div class="body-grid flip">
       <div class="stage-3d">
         <div class="banks-stage">
-          <div class="mask-bits">
-            <span>1</span><span>0</span><span>1</span><span>1</span>
-          </div>
-          <div class="banks-grid">
-            <!-- 16 cols × 8 rows -->
-            <!-- Row generated inline -->
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
-            <div data-b="0"></div><div data-b="1"></div><div data-b="2"></div><div data-b="3"></div>
+          <div class="mask-title">Exemplo didático: máscara <b>1011</b></div>
+          <div class="plane-mask-board">
+            <div class="plane-card on">
+              <div class="plane-bit">1</div>
+              <div class="plane-name">Bank 0<br/>cols 0,4,8…</div>
+              <div class="plane-column">
+                <span style="background:#ef4444"></span><span style="background:#ef4444"></span>
+                <span style="background:#ef4444"></span><span style="background:#ef4444"></span>
+                <span style="background:#ef4444"></span><span style="background:#ef4444"></span>
+              </div>
+              <div class="plane-state">escreve</div>
+            </div>
+            <div class="plane-card off">
+              <div class="plane-bit">0</div>
+              <div class="plane-name">Bank 1<br/>cols 1,5,9…</div>
+              <div class="plane-column">
+                <span style="background:#f59e0b"></span><span style="background:#f59e0b"></span>
+                <span style="background:#f59e0b"></span><span style="background:#f59e0b"></span>
+                <span style="background:#f59e0b"></span><span style="background:#f59e0b"></span>
+              </div>
+              <div class="plane-state">preserva</div>
+            </div>
+            <div class="plane-card on">
+              <div class="plane-bit">1</div>
+              <div class="plane-name">Bank 2<br/>cols 2,6,10…</div>
+              <div class="plane-column">
+                <span style="background:#10b981"></span><span style="background:#10b981"></span>
+                <span style="background:#10b981"></span><span style="background:#10b981"></span>
+                <span style="background:#10b981"></span><span style="background:#10b981"></span>
+              </div>
+              <div class="plane-state">escreve</div>
+            </div>
+            <div class="plane-card on">
+              <div class="plane-bit">1</div>
+              <div class="plane-name">Bank 3<br/>cols 3,7,11…</div>
+              <div class="plane-column">
+                <span style="background:#2563eb"></span><span style="background:#2563eb"></span>
+                <span style="background:#2563eb"></span><span style="background:#2563eb"></span>
+                <span style="background:#2563eb"></span><span style="background:#2563eb"></span>
+              </div>
+              <div class="plane-state">escreve</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1775,37 +2594,37 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="14 mapmasks Lookup">
     <div class="slide-num">14 / 23</div>
-    <p class="eyebrow">4.7.7.2 · mapmasks[1..3]</p>
+    <p class="eyebrow">4.7.7.2 · mapmasks decide 1, 2 ou 3 passes</p>
     <h1 class="title">Quantos Passes? Depende do Alinhamento</h1>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; flex: 1; align-items: stretch;">
-      <div style="display: flex; flex-direction: column; gap: 14px; background: white; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-card); border-top: 4px solid #047857;">
-        <div style="font-family: var(--font-mono); font-size: 18px; color: #047857; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Caso ideal · 1 pass</div>
-        <img src="images/vga-mask-1pass.png" alt="2 colunas alinhadas em 1 pass" style="width: 100%; background: white; border-radius: 8px;" />
-        <div style="font-family: var(--font-mono); font-size: 16px; color: var(--ink); line-height: 1.5;">
+    <div class="mapmask-grid">
+      <div class="mapmask-card good">
+        <div class="mapmask-title good">Caso ideal · 1 pass</div>
+        <img src="images/vga-mask-1pass.png" alt="2 colunas alinhadas em 1 pass" />
+        <div class="mapmask-note">
           <b>pixels 0-1</b> · banks 0+1<br/>
-          <span style="color:#047857;">mask = 3</span> · <b>1 escrita</b> resolve tudo
+          <span class="mask-calc" style="color:#047857;">mask = 3 · 1 escrita</span>
         </div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 14px; background: white; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-card); border-top: 4px solid var(--orange);">
-        <div style="font-family: var(--font-mono); font-size: 18px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Desalinhado · 2 passes</div>
-        <img src="images/vga-mask-2pass.png" alt="2 colunas atravessando boundary" style="width: 100%; background: white; border-radius: 8px;" />
-        <div style="font-family: var(--font-mono); font-size: 16px; color: var(--ink); line-height: 1.5;">
+      <div class="mapmask-card warn">
+        <div class="mapmask-title warn">Desalinhado · 2 passes</div>
+        <img src="images/vga-mask-2pass.png" alt="2 colunas atravessando boundary" />
+        <div class="mapmask-note">
           <b>pixels 3-4</b> · cruza fronteira<br/>
-          <span style="color:#b45309;">mask₁ = 8 · mask₂ = 1</span>
+          <span class="mask-calc" style="color:#b45309;">mask₁ = 8 · mask₂ = 1</span>
         </div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 14px; background: white; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-card); border-top: 4px solid #b91c1c;">
-        <div style="font-family: var(--font-mono); font-size: 18px; color: #b91c1c; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Pior caso · 3 passes</div>
-        <img src="images/vga-mask-3pass.png" alt="8 colunas em 3 passes" style="width: 100%; background: white; border-radius: 8px;" />
-        <div style="font-family: var(--font-mono); font-size: 16px; color: var(--ink); line-height: 1.5;">
+      <div class="mapmask-card bad">
+        <div class="mapmask-title bad">Pior caso · 3 passes</div>
+        <img src="images/vga-mask-3pass.png" alt="8 colunas em 3 passes" />
+        <div class="mapmask-note">
           <b>pixels 3-A</b> · 8 colunas<br/>
-          <span style="color:#b91c1c;">mask₁=8 · mask₂=15 · mask₃=7</span>
+          <span class="mask-calc" style="color:#b91c1c;">mask₁=8 · mask₂=15 · mask₃=7</span>
         </div>
       </div>
     </div>
-    <div style="margin-top: 36px; padding: 20px 28px; background: var(--navy); color: #fff; border-radius: 10px; font-family: var(--font-mono); font-size: 20px; line-height: 1.4; display: flex; align-items: center; gap: 24px;">
-      <span style="color: var(--orange); font-weight: 700; letter-spacing: 0.04em;">LOOKUP</span>
-      <span>3 tabelas <b style="color:#fcd34d;">mapmasks[4][8]</b> · indexadas por <b style="color:#fcd34d;">(bank align, pixel count)</b> · zero cálculo em runtime</span>
+    <div class="mapmask-lookup">
+      <span class="label">IDEIA</span>
+      <span>o engine já sabe qual máscara usar para cada alinhamento — <b style="color:#fcd34d;">sem calcular no meio do frame</b></span>
     </div>
     <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>14</span></div>
   </section>
@@ -1815,42 +2634,42 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="15 50% Escritas Evitadas">
     <div class="slide-num">15 / 23</div>
-    <p class="eyebrow">4.7.7.2 · ganho real medido</p>
+    <p class="eyebrow">4.7.7.2 · Escritas em rosa são puladas pelo renderer</p>
     <h1 class="title" style="margin-bottom: 28px;">Tudo em <span style="color: #d946ef;">rosa</span> é uma escrita evitada</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px; align-items: stretch;">
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase;">Cena 1 · original</div>
+        <div style="font-family: var(--font-mono); font-size: 17px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase;">Cena 1 · original</div>
         <img src="images/wolf-blue-before.png" alt="blue original" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-card);" />
       </div>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="font-family: var(--font-mono); font-size: 14px; color: #d946ef; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Cena 1 · debug rosa</div>
+        <div style="font-family: var(--font-mono); font-size: 17px; color: #d946ef; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Cena 1 · debug rosa</div>
         <img src="images/wolf-blue-pink.png" alt="blue debug" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-deep); border: 2px solid #d946ef;" />
       </div>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase;">Cena 2 · original</div>
+        <div style="font-family: var(--font-mono); font-size: 17px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase;">Cena 2 · original</div>
         <img src="images/wolf-eagle-before.png" alt="eagle original" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-card);" />
       </div>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="font-family: var(--font-mono); font-size: 14px; color: #d946ef; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Cena 2 · debug rosa</div>
+        <div style="font-family: var(--font-mono); font-size: 17px; color: #d946ef; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;">Cena 2 · debug rosa</div>
         <img src="images/wolf-eagle-pink.png" alt="eagle debug" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; image-rendering: pixelated; border-radius: 8px; box-shadow: var(--shadow-deep); border: 2px solid #d946ef;" />
       </div>
     </div>
     <ul class="bullets" style="margin-top: 32px; gap: 14px;">
-      <li style="font-size: 24px; padding-left: 48px;"><span class="marker" style="font-size: 22px;">▶</span>Cada faixa <b style="color:#d946ef;">rosa</b> é uma coluna que o engine <b>NÃO</b> precisou escrever — veio de graça com a vizinha</li>
-      <li style="font-size: 24px; padding-left: 48px;"><span class="marker" style="font-size: 22px;">▶</span>O ganho cresce quando o jogador está <b>perto da parede</b> (mais colunas idênticas adjacentes)</li>
+      <li style="font-size: 28px; padding-left: 54px;"><span class="marker" style="font-size: 26px;">▶</span>Cada faixa <b style="color:#d946ef;">rosa</b> é uma coluna que o engine <b>NÃO</b> precisou escrever — veio de graça com a vizinha</li>
+      <li style="font-size: 28px; padding-left: 54px;"><span class="marker" style="font-size: 26px;">▶</span>O ganho cresce quando o jogador está <b>perto da parede</b> (mais colunas idênticas adjacentes)</li>
     </ul>
     <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 18px;">
       <div style="background: white; padding: 16px 20px; border-radius: 8px; box-shadow: var(--shadow-card); border-left: 4px solid var(--orange);">
-        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Escritas evitadas</div>
-        <div style="font-family: var(--font-mono); font-size: 30px; color: var(--navy); font-weight: 700;">~50%</div>
+        <div style="font-family: var(--font-mono); font-size: 15px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Escritas evitadas</div>
+        <div style="font-family: var(--font-mono); font-size: 36px; color: var(--navy); font-weight: 700;">~50%</div>
       </div>
       <div style="background: white; padding: 16px 20px; border-radius: 8px; box-shadow: var(--shadow-card); border-left: 4px solid var(--blue);">
-        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Custo extra</div>
-        <div style="font-family: var(--font-mono); font-size: 18px; color: var(--navy); font-weight: 600; line-height: 1.2;">comparação por raio</div>
+        <div style="font-family: var(--font-mono); font-size: 15px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Custo extra</div>
+        <div style="font-family: var(--font-mono); font-size: 22px; color: var(--navy); font-weight: 600; line-height: 1.2;">comparação por raio</div>
       </div>
       <div style="background: var(--navy); color: white; padding: 16px 20px; border-radius: 8px;">
-        <div style="font-family: var(--font-mono); font-size: 12px; color: #fcd34d; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Trivia · DOOM '93</div>
-        <div style="font-family: var(--font-mono); font-size: 15px; line-height: 1.3;">"low detail mode" duplica colunas (160→320) usando o mesmo truque do VGA para rodar em 386</div>
+        <div style="font-family: var(--font-mono); font-size: 15px; color: #fcd34d; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Trivia · DOOM '93</div>
+        <div style="font-family: var(--font-mono); font-size: 18px; line-height: 1.35;">"low detail mode" duplica colunas (160→320) usando o mesmo truque do VGA para rodar em 386</div>
       </div>
     </div>
     <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>15</span></div>
@@ -1861,7 +2680,7 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="16 Baked Light">
     <div class="slide-num">16 / 23</div>
-    <p class="eyebrow">4.7.7.3 · Texturing</p>
+    <p class="eyebrow">4.7.7.3 · Luz simulada escolhendo textura X ou Y</p>
     <h1 class="title">Baked Light Texturing</h1>
     <div class="body-grid">
       <div>
@@ -1903,7 +2722,7 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="17 Lit vs Unlit">
     <div class="slide-num">17 / 23</div>
-    <p class="eyebrow">4.7.7.3 · Figura 4.55 — duas versões de cada textura</p>
+    <p class="eyebrow">4.7.7.3 · Figura 4.55 — versão lit e unlit por textura</p>
     <h1 class="title">Uma Textura, Duas Versões</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 48px; flex: 1; align-items: center;">
       <div style="display: flex; flex-direction: column; gap: 16px; align-items: center;">
@@ -1936,7 +2755,7 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="18 Cena com vs sem baked">
     <div class="slide-num">18 / 23</div>
-    <p class="eyebrow">4.7.7.3 · Figura 4.56 — impacto visual</p>
+    <p class="eyebrow">4.7.7.3 · Figura 4.56 — baked lighting muda a leitura da cena</p>
     <h1 class="title">Sem &amp; Com Baked Lighting</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; flex: 1; align-items: center;">
       <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -1972,16 +2791,22 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="19 Portas e Push Walls">
     <div class="slide-num">19 / 23</div>
-    <p class="eyebrow">4.7.7.4 · Portas no raycaster</p>
+    <p class="eyebrow">4.7.7.4 · Porta deixa o tile parcialmente atravessável</p>
     <h1 class="title">O Tile Deixa de Ser Binário</h1>
     <div class="body-grid flip">
       <div class="stage-3d">
         <div class="door-stage">
-          <div class="rail"></div>
-          <div class="door-frame"></div>
-          <div class="door-leaf l" style="left: calc(50% - 136px);"></div>
-          <div class="door-leaf r" style="left: calc(50% - 8px);"></div>
-          <div class="door-ray"></div>
+          <div class="door-world">
+            <div class="door-tile-floor"></div>
+            <div class="door-tile-active"></div>
+            <div class="door-slot"></div>
+            <div class="door-wall left"></div>
+            <div class="door-wall right"></div>
+            <div class="door-face"></div>
+            <div class="door-ray"></div>
+            <div class="door-hit"></div>
+          </div>
+          <div class="door-caption"><b>A face desliza dentro do tile:</b> o raio testa onde ela está agora.</div>
         </div>
       </div>
       <div>
@@ -2015,7 +2840,7 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="20 Porta em Cena">
     <div class="slide-num">20 / 23</div>
-    <p class="eyebrow">4.7.7.4 · Porta como tile especial</p>
+    <p class="eyebrow">4.7.7.4 · Face móvel da porta ajusta a colisão do raio</p>
     <h1 class="title" style="margin-bottom: 34px;">A Porta Parece 3D, Mas É Um Caso do Raycaster</h1>
     <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; flex: 1; align-items: start;">
       <div class="media-frame">
@@ -2055,7 +2880,7 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="21 Teste doorposition">
     <div class="slide-num">21 / 23</div>
-    <p class="eyebrow">4.7.7.4 · Figura 4.57 — raio atravessando porta aberta</p>
+    <p class="eyebrow">4.7.7.4 · Figura 4.57 — doorposition decide colisão</p>
     <h1 class="title" style="margin-bottom: 34px;">O Teste Que Decide: Bate ou Atravessa?</h1>
     <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; flex: 1; align-items: start;">
       <div class="media-frame">
@@ -2099,7 +2924,7 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="22 Porta no Código">
     <div class="slide-num">22 / 23</div>
-    <p class="eyebrow">4.7.7.4 · Estado e intercept passado ao renderer</p>
+    <p class="eyebrow">4.7.7.4 · Estado da porta vira intercept para desenhar a coluna</p>
     <h1 class="title">A Porta É Estado + Um Intercept Ajustado</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 42px; flex: 1; align-items: stretch;">
       <div style="display: flex; flex-direction: column; gap: 22px;">
@@ -2145,17 +2970,26 @@ asm call DWORD PTR [bp]
   <!-- ============================================================ -->
   <section data-label="23 Push Walls">
     <div class="slide-num">23 / 23</div>
-    <p class="eyebrow">4.7.7.5 · Push walls</p>
+    <p class="eyebrow">4.7.7.5 · Push wall desloca a face antes do teste do raio</p>
     <h1 class="title">Push Walls: A Mesma Ideia, Com Offset</h1>
     <div class="body-grid flip">
       <div class="stage-3d">
-        <div class="push-stage">
-          <div class="push-room">
-            <div class="push-grid"></div>
-            <div class="push-block"></div>
+        <div class="push-wrap">
+          <div class="push-stage">
+            <div class="push-room">
+              <div class="push-grid"></div>
+              <div class="push-block"></div>
+            </div>
+            <div class="push-ray"></div>
           </div>
-          <div class="push-ray"></div>
-          <div class="push-label">intercept +=<br/>pushOffset</div>
+          <div class="push-caption" aria-label="Legenda do exemplo">
+            <div class="t">Push wall: a face “anda” dentro do tile</div>
+            <div class="eq">intercept<b>'</b> = intercept + <b>pushOffset</b></div>
+            <div class="mini">
+              <div><span class="k">pushOffset:</span> animação (0 → 1 tile) aplicada <b>antes</b> do teste do raio</div>
+              <div><span class="k">efeito:</span> o mesmo tile parece virar uma parede móvel no corredor</div>
+              </div>
+          </div>
         </div>
       </div>
       <div>

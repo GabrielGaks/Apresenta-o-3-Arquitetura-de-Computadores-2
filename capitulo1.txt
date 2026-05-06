@@ -1,0 +1,609 @@
+
+
+4.7.6    Fisheye Effect Corrected
+This correction is enough to give pleasant straight lines for the walls. To demonstrate the
+difference, pages 180 and 181 show two versions of the same scene next to each other.
+First uncorrected (with fisheye) and then with projected distance z instead of direct dis-
+tance d.
+
+
+178
+CHAPTER 4. SOFTWARE                             4.7. ACTION PHASE: 3D RENDERER
+
+
+
+
+                   A
+
+
+
+      Player
+                            B
+
+
+    MAP SPACE
+
+
+
+                                                              A
+
+                                                                               B
+
+                                                         Player
+
+
+
+
+                                                PLAYER SPACE
+               Figure 4.53: Translating from map space to player space.
+
+In Figure 4.53, the map space coordinates of points A and B are transformed in player
+space coordinate where the player is located at coordinate 0,0.
+
+
+
+
+                                                                                 179
+4.7. ACTION PHASE: 3D RENDERER   CHAPTER 4. SOFTWARE
+
+
+
+
+180
+CHAPTER 4. SOFTWARE   4.7. ACTION PHASE: 3D RENDERER
+
+
+
+
+                                                 181
+4.7. ACTION PHASE: 3D RENDERER                                 CHAPTER 4. SOFTWARE
+
+
+4.7.7     Drawing Walls
+With column height calculated, all that remains is to draw a column of textured pixels.
+
+That may sound easy but is in fact difficult on a CPU with as little power as a 386. Scaling
+a column of 64 texels is expensive. It turns out you need a few optimizations to do it fast
+enough. This is where Wolfenstein 3D leaves other 3D engines of the era in the dust. The
+secret to its speed lies in two tricks called:
+
+      • Compiled scalers
+
+      • Deferred column rendering
+
+4.7.7.1   Compiled Scalers
+
+All columns of pixels representing the walls are centered vertically and either magnified or
+minified. The goal is to scale a column of 64 texels to any height ranging from 2 pixels to
+the max 3D canvas height (152 pixels) as quickly as possible.
+
+
+
+
+182
+CHAPTER 4. SOFTWARE                                      4.7. ACTION PHASE: 3D RENDERER
+
+
+As the photoshopped pink line shows, each column of pixels for a wall is centered verti-
+cally with no offset added. In order to do this, a naive approach would be to use a generic
+routine looking something like this.
+
+void s ca leT e xt ur e To He i gh t ( int height , void * src , void * dst ) {
+  fixed_t src_cursor = 0; // 24:8 format
+  int dest_cursor = 0;
+  fixed_t step = FixedDiv (64 , height ) ;
+
+    while ( height > 0) {
+      if ( dst_not_clipped ( dest_cursor ) ) {
+        dst [ dest_cursor ] = src [ src_cursor >> 8];
+      }
+      src_cursor += step ;
+      height - -;
+      dest_cursor ++;
+    }
+}
+
+This would involve a loop resulting in at least one jmp17 , a fixed-point accumulator, and
+intermediate variables. That would be a lot of instructions due mostly to the genericity of
+the function. Indeed this flexible function allows scaleTextureToHeight to accept any
+height from 0 to INT_MAX.
+
+There is a faster way to do this which involves the usual RAM vs CPU tradeoff. In this case
+we can invest a little bit of RAM to gain a lot of CPU time. The idea is to make the scaler
+less generic and instead generate hard-coded functions.
+
+void scaleTextureTo2 ( void * src , void * dst ) {
+  dst [0] = src [16];
+  dst [1] = src [48];
+}
+
+void scaleTextureTo4 ( void * src , void * dst ) {
+  dst [0] = src [0];
+  dst [1] = src [16];
+  dst [2] = src [32];
+  dst [3] = src [63];
+}
+
+The engine generates machine code at runtime when it starts; this happens in Build-
+CompScale.
+
+    17 jmp instructions always cause a pipeline flush.
+
+
+
+                                                                                       183
+4.7. ACTION PHASE: 3D RENDERER                                       CHAPTER 4. SOFTWARE
+
+
+
+// Call with
+// DS : SI   Source for scale
+// ES : DI   Dest for scale
+unsigned BuildCompScale ( int height , byte far * code )
+  [...]
+  work = ( t_compscale far *) code ;
+  code = & work - > code [0];
+  [...]
+  for ( src =0; src <=64; src ++) {
+
+      if ( n o t _ r e s u l t _ i n _ w r i t t e n _ p i x e l )
+        continue ;
+
+      // mov al ,[ si + src ]                ( Read src into register al )
+      * code ++ = 0 x8a ;
+      * code ++ = 0 x44 ;
+      * code ++ = src ;
+
+      for ( magnific atio n_siz e ) {
+        // mov [ es : di + heightofs ] , al ( Write al to dest )
+        * code ++ = 0 x26 ;
+        * code ++ = 0 x88 ;
+        * code ++ = 0 x85 ;
+        *(( unsigned far *) code ) ++ = startpix * SCREENBWIDE ;
+      }
+    }
+    // retf
+    * code ++ = 0 xcb ;
+}
+
+Given a height, BuildCompScale generates x86 instructions in the out variable code. As
+a result, instead of having one generic function accepting any height, Wolfenstein has 256
+functions with hard-coded heights. Hard-coding the height allows for unrolling the loop and
+reducing overhead.
+
+With this optimization, minifying a column of 64 texels to a 2 pixel tall column takes 15
+instructions. Minifying to 4 pixels take 25 instructions. Magnifying to 128 pixels takes 705
+(64*11+1) instructions. A precompiled scaler function has a fixed cost of 7 instructions per
+pixel when minifying and 3 + 4 * 𝑠𝑐𝑎𝑙𝑖𝑛𝑔𝐹 𝑎𝑐𝑡𝑜𝑟 instructions per pixel when magnifying. It
+doesn’t get any faster than that.
+
+What is the RAM cost incurred by precompiling and caching these scalers? When render-
+
+
+184
+CHAPTER 4. SOFTWARE                                           4.7. ACTION PHASE: 3D RENDERER
+
+
+ing to its maximum dimension in the 3D canvas, the engine generates all scalers of even
+height from 2 to 51218 . That’s 255 scalers totaling 178,479 bytes of generated instructions.
+This cost was deemed too high.
+
+To save RAM, past size 76 only every other even size is generated (2,4,6,..,72,74,76) and
+(78,82,86,...,504,508,512). This trick generates only 136 scalers for a total instruction size
+of 83,160 bytes.
+
+Skipping compiled scaler generation involves using the wrong scaler when one is not avail-
+able and introduces small visual artifacts, but they are barely noticeable.
+
+Notice that scalers are generated at startup but if the 3D canvas’ dimensions are changed
+they have to be re-generated. This is what happens after a resize while the "thinking"
+screen is showing.
+
+
+
+
+  18 512 is taller than the height of the 3D canvas (which is 152). However, the engine needs to render sprites
+
+magnified to the point where sprites are clipped vertically.
+
+
+                                                                                                          185
+4.7. ACTION PHASE: 3D RENDERER                                  CHAPTER 4. SOFTWARE
+
+
+4.7.7.2   Deferred Column Drawing
+
+The second level of optimization is based on deferred rendering. When a column of pixels
+meets certain conditions, it is buffered and rendered later in a batch, leveraging the VGA
+mask to save write operations.
+
+A simple raycaster with compiled scalers would have looked like this.
+
+for ( int x =0 ; x < 320 ; x ++) {
+  castRay () ;
+  height = C alc ula t eWallHeight () ;
+  drawColumn (x , height ) ;
+}
+
+Instead, the engine buffers what to draw as follows.
+
+for ( int x =0; x <320 ; x ++) {
+  castRay () ;
+  if ( r a y S i m i l a r T o On e s I n B u ff e r ) {
+       AddCo lumnToBu ffer () ;
+    continue ;
+  } else {
+       DrawBuffer () ;
+       height = CalcWallHeight () ;
+       AddCo lumnToBu ffer () ;
+  }
+}
+
+This buffering is done because the renderer allows itself to cheat a little when two rays
+are deemed similar enough. If consecutive rays share characteristics, they are grouped
+together and drawn at the same height, regardless of their exact distance from the player’s
+point of view. This process introduces a little distortion but unlocks a formidable speed in-
+crease: the engine can write multiple columns on the screen, up to eight pixels in 3 writes.
+
+Rays are similar if they hit the same wall and result in the same v horizontal texture coor-
+dinate. In short, this optimization leverages wall magnification.
+
+The best case for this trick is shown in the next screenshot where the player is as close as
+possible to a wall. In this example, the wall completely covers the left part of the screen.
+The magnification is obvious given how texels spread across multiple pixels horizontally.
+In this case, multiple consecutive rays hit a texture at the same horizontal coordinate.
+
+
+
+
+186
+CHAPTER 4. SOFTWARE                               4.7. ACTION PHASE: 3D RENDERER
+
+
+
+
+This trick is only possible because each columns on screen are fully stored in a single VGA
+bank. For a screen alternating columns of plain colors green blue, red, and pink, all green
+colors are in bank 0. All blue columns are in bank 1 and so on.
+
+
+
+
+On page 188 you can see a 3D view with its associated bank storage underneath. Each
+bank looks like a compressed version of the screen because it stores every fourth column.
+
+
+                                                                                       187
+4.7. ACTION PHASE: 3D RENDERER                            CHAPTER 4. SOFTWARE
+
+
+Bank 0 stores column 0, column 4, column 8, and so on. Bank 1 stores column 1, column
+5, column 9 and so on. Column 0 and Column 1 are at the same address in bank 0 and
+bank 1.
+
+
+
+
+188
+CHAPTER 4. SOFTWARE                                 4.7. ACTION PHASE: 3D RENDERER
+
+
+To achieve this trick, the engine must be careful in factoring in the four bank bytes align-
+ment and the position of the columns on screen. The details of this are in the method
+ScalePost in WL_DRAW.C.
+
+void         near ScalePost ( void )           // VGA version
+{
+       ...
+       // scale a byte wide strip              of   wall
+       asm mov bx ,[ postx ]                   //   posx = x coordinate ..
+       asm mov di , bx                         //   . where to draw
+       asm shr di ,2                           //   X in bytes
+       asm add di ,[ bufferofs ]
+
+       asm     and   bx ,3
+       asm     shl   bx ,3                     // bx = pixel *8+ postwidth
+       asm     add   bx ,[ postwidth ]
+
+       // First pass .
+       asm mov al , BYTE PTR [ mapmasks1 -1+ bx ]
+       asm mov dx , SC_INDEX +1
+       asm out dx , al              // set VGA bank mask
+       asm lds si , DWORD PTR [ postsource ]
+       asm call DWORD PTR [ bp ]    // call compiled scaler
+
+       // Second     pass .
+       asm mov       al , BYTE PTR [ ss : mapmasks2 -1+ bx ]
+       asm or        al , al
+       asm jz        nomore
+       asm inc       di
+       asm out       dx , al                 // set VGA bank mask
+       asm call      DWORD PTR [ bp ]        // call compiled scaler
+
+       [...]
+
+    // Third pass .
+nomore :
+}
+
+The engine will group up to 8 columns together. Because of the VGA alignment it can take
+up to three passes to write them all. Since there can be multiple combinations of VGA
+bank alignment and number of pixels to draw, the VGA mask is precalculated and looked
+up at runtime. Each pass has its own settings. A pass runs only if the VGA mask is not
+zero.
+
+
+                                                                                        189
+4.7. ACTION PHASE: 3D RENDERER                                 CHAPTER 4. SOFTWARE
+
+
+
+byte mapmasks1 [4][8] = {
+{1 ,3 ,7 ,15 ,15 ,15 ,15 ,15} ,
+{2 ,6 ,14 ,14 ,14 ,14 ,14 ,14} ,
+{4 ,12 ,12 ,12 ,12 ,12 ,12 ,12} ,
+{8 ,8 ,8 ,8 ,8 ,8 ,8 ,8} };
+
+byte       mapmasks2 [4][8] = {
+{0 ,0      ,0 ,0 ,1 ,3 ,7 ,15} ,
+{0 ,0      ,0 ,1 ,3 ,7 ,15 ,15} ,
+{0 ,0      ,1 ,3 ,7 ,15 ,15 ,15} ,
+{0 ,1      ,3 ,7 ,15 ,15 ,15 ,15} };
+
+byte       mapmasks3 [4][8] = {
+{0 ,0      ,0 ,0 ,0 ,0 ,0 ,0} ,
+{0 ,0      ,0 ,0 ,0 ,0 ,0 ,1} ,
+{0 ,0      ,0 ,0 ,0 ,0 ,1 ,3} ,
+{0 ,0      ,0 ,0 ,0 ,1 ,3 ,7} };
+
+Each mapmasks array is used during each pass X as:
+
+VGA_MASK = mapmasksX[first_column_x_coordinate%4][numcolumn - 1]
+
+The engine does an early return when VGA_MASK is equal to 0 (which is equivalent to "no
+more pixels are to be drawn"). This is easier to demonstrate with drawings. First a recap
+of how the VGA byte mask works.
+
+      • Bank 0 is selected when bit 1«0 (1) is set to 1.
+
+      • Bank 1 is selected when bit 1«1 (2) is set to 1.
+
+      • Bank 2 is selected when bit 1«2 (4) is set to 1.
+
+      • Bank 3 is selected when bit 1«3 (8) is set to 1.
+
+
+                Unused                       Bank3 Bank2 Bank1 Bank0
+
+                                                 8         4        2            1
+With these in mind, here are a few examples using the following layout where the engine
+wants to draw a column of pixels.
+
+
+
+
+190
+CHAPTER 4. SOFTWARE                              4.7. ACTION PHASE: 3D RENDERER
+
+
+                   Bank 0        Bank 1         Bank 2        Bank 3
+
+
+
+
+             0x2       8              9              A             B
+             0x1       4              5              6             7
+             0x0       0              1              2             3
+
+
+
+
+                   0 1 2 3 4 5 6 7 89AB
+
+
+      Figure 4.54: All following examples are based on this VRAM/Screen layout.
+
+Drawing two columns (under pixel 0 and 1) can be done with only one pass using a VGA
+mask set to 3 to write in banks 0 and 1.
+
+PASS1 : mapmasks1 [0][1] = 3
+PASS2 : mapmasks2 [0][1] = 0 -> EXIT
+
+
+
+              1 2 4 8 1 2 4 8 1 2 4 8 Banks
+              0 1 2 3 4 5 6 7 8 9 A B Pixels
+
+
+
+
+If the two columns are not properly aligned (like columns under pixels 3 and 4), the mask
+is of no help. Two passes with mask set to 8 and then 1 will be needed.
+
+                                                                                     191
+4.7. ACTION PHASE: 3D RENDERER                                CHAPTER 4. SOFTWARE
+
+
+
+PASS1 : mapmasks1 [3][1] = 8
+PASS2 : mapmasks2 [3][1] = 1
+PASS3 : mapmasks3 [3][1] = 0 -> EXIT
+
+
+
+              1 2 4 8 1 2 4 8 1 2 4 8 Banks
+              0 1 2 3 4 5 6 7 8 9 A B Pixels
+
+
+
+
+In the worst case scenario, the engine needs to draw eight columns of pixels, under pixels
+3,4,5,6,7,8,9 and A. Because of the poor alignment, three passes are needed with mask
+set to 8, 15 and, 7.
+
+PASS1 : mapmasks1 [3][7] = 8
+PASS2 : mapmasks2 [3][7] = 15
+PASS3 : mapmasks3 [3][7] = 7 -> EXIT
+
+
+
+              1 2 4 8 1 2 4 8 1 2 4 8 Banks
+              0 1 2 3 4 5 6 7 8 9 A B Pixels
+
+
+
+
+Trivia : In 1993 id Software would make the VGA "multi-write" instrumental to the success
+of DOOM. The engine worked well with an Intel 486 CPU but the framerate was within the
+single digit on a 386. They solved the problem by adding a "low detail" mode where every
+pixels columns are doubled. The resolution of 160x168 (doubled to 320x168 with the VGA
+
+192
+CHAPTER 4. SOFTWARE                               4.7. ACTION PHASE: 3D RENDERER
+
+
+trick) allowed 386 CPU to reach a playable double digit framerate.
+
+
+
+
+Above, DOOM in high-resolution. Below, DOOM in low-resolution mode. The differences
+are barely noticeable in action sequences.
+
+
+
+
+To visualize Wolfenstein 3D performance gain in real cases, the engine has been modified
+to draw columns of pixels which were written "for free" thanks to the VGA mask manipula-
+tion in pink (pages 194 and 195). We can see the performance improvement is significant,
+with 50% of write operations avoided.
+
+
+                                                                                    193
+4.7. ACTION PHASE: 3D RENDERER   CHAPTER 4. SOFTWARE
+
+
+
+
+194
+CHAPTER 4. SOFTWARE   4.7. ACTION PHASE: 3D RENDERER
+
+
+
+
+                                                 195
+4.7. ACTION PHASE: 3D RENDERER                                    CHAPTER 4. SOFTWARE
+
+
+This technique helps solve for scenarios where a large number of pixels have to be written
+due to the size of the wall. It only really shines when a lot of magnification occurs. For
+walls far away (minified) this technique doesn’t help at all, but this matters less as small
+walls are cheap because they have fewer pixels to render.
+
+Trivia : Generating code at runtime may sound like an outdated technology. However,
+it was used as recently as 2016 when Android emulator used PixelFlinger to render the
+entire phone screen.
+
+
+
+4.7.7.3   Texturing
+
+A subtle but extremely efficient trick used to improve the quality of the wall rendering is
+pre-baked light texturing. Wall texture assets were generated twice by the artists: once lit
+and once unlit.
+
+At runtime, upon finding ray-wall intersection, if the ray hits a vertical wall (in map space)
+on the Y axis, the engine uses a lit texture. If the ray hits a horizontal wall (on the X axis),
+it uses the unlit version of the same texture.
+
+The difference is not obvious at first, but with the same scene rendered side by side with
+and without this effect, the visual difference is striking, giving the scene more realism
+because of this directional-light effect.
+
+
+
+
+                          Figure 4.55: Lit and unlit wood textures.
+
+
+196
+CHAPTER 4. SOFTWARE                         4.7. ACTION PHASE: 3D RENDERER
+
+
+
+
+        Figure 4.56: Above: Baked texture off. Below: Baked texture on.
+
+
+
+
+                                                                          197
+4.7. ACTION PHASE: 3D RENDERER                                 CHAPTER 4. SOFTWARE
+
+
+4.7.7.4   Doors
+
+Doors are rendered directly via the raycaster. Therefore, they have no thickness as that
+would have been much more complicated to implement.
+
+
+
+
+Upon hitting a "DOOR" tile, the raycaster consults the doorposition array. The raycaster
+is able to calculate how far along a door is opened and if it should either stop at the door
+or traverse through.
+
+
+// max number of sliding doors
+# define MAXDOORS 64
+
+// leading edge of door 0= closed , 0 xffff = fully open
+unsigned doorposition [ MAXDOORS ];
+
+
+
+
+198
+CHAPTER 4. SOFTWARE                                4.7. ACTION PHASE: 3D RENDERER
+
+
+
+
+                                                                               C
+                                                                       B
+                                                       A             Ystep/2
+
+                                                                     Door 1/3 closed
+                                           Ystep
+                 Player
+
+
+
+
+                   Figure 4.57: A ray traversing a partially opened door.
+
+Testing if a ray is stopped by a door or not costs almost nothing:
+
+
+                            𝑦𝑠𝑡𝑒𝑝
+                   𝐴𝑋 +           < 𝑑𝑜𝑜𝑟𝑝𝑜𝑠𝑖𝑡𝑖𝑜𝑛[𝑑𝑜𝑜𝑟𝐼𝑛𝑑𝑒𝑥]
+                              2
+
+In case of success, the ray traverses the wall tile and continues being tested against
+the grid. If the ray is a hit, the coordinates of the point of interception are calculated
+                         𝑦𝑠𝑡𝑒𝑝                           𝑇 𝐼𝐿𝐸 _𝑆𝐼𝑍𝐸
+as 𝐼𝑛𝑡𝑒𝑟𝑐𝑒𝑝𝑡𝑋 = 𝐴𝑋 +            and 𝐼𝑛𝑡𝑒𝑟𝑐𝑒𝑝𝑡𝑌 = 𝐴𝑌 +                    and passed to the
+                           2                                     2
+renderer.
+
+4.7.7.5     Push Walls
+
+Push walls are also implemented via the raycaster. Like doors, these moving walls are
+also treated as special cases. If the push wall has been activated, the raycaster adds an
+offset to the ray intercept coordinates.
+
+
+
+
+                                                                                      199
+

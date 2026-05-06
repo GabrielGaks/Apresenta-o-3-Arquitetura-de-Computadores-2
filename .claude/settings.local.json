@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(python3 -m pip install pymupdf)",
+      "Bash(apt list *)",
+      "Bash(dpkg -l)",
+      "Bash(sudo apt-get install -y python3-pip)",
+      "Bash(python3 -m ensurepip --upgrade)",
+      "Read(//usr/lib/python3/dist-packages/**)",
+      "Bash(python3 -c \"import pdfminer; print\\('pdfminer ok'\\)\")",
+      "Bash(python3 -c \"import pypdf; print\\('pypdf ok'\\)\")",
+      "Bash(python3 -c \"import PIL; print\\('PIL ok'\\)\")",
+      "Bash(python3 -c \"import importlib; mods=['pypdf2','pypdf','pdfplumber','pdfminer','pdfminer.six']; [print\\(m,'ok'\\) for m in mods if importlib.util.find_spec\\(m.split\\('.'\\)[0]\\)]\")",
+      "Read(//usr/**)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(chmod +x \"/home/batman/Área de trabalho/SistemaSlides/extract_pdf.py\")",
+      "Bash(python3 \"/home/batman/Área de trabalho/SistemaSlides/extract_pdf.py\" --help)"
+    ]
+  }
+}
