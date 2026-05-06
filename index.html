@@ -1253,244 +1253,315 @@
   /* ===== VGA banks (slide 7) ===== */
   .banks-stage {
     width: 620px;
-    height: 500px;
+    height: 520px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 24px;
     font-family: var(--font-mono);
   }
-  .mask-title {
-    align-self: center;
-    padding: 10px 18px;
+  .vga-bank-reference {
     background: white;
-    border-left: 4px solid var(--orange);
     border-radius: 8px;
     box-shadow: var(--shadow-card);
-    color: var(--navy);
-    font-size: 21px;
-    font-weight: 700;
+    border-left: 4px solid var(--orange);
+    padding: 20px 22px 18px;
+    font-family: var(--font-mono);
   }
-  .mask-title b { color: #b45309; }
-  .plane-mask-board {
+  .vga-bank-reference .label {
+    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #b45309;
+  }
+  .vga-bank-reference img {
+    width: 100%;
+    max-height: 330px;
+    object-fit: contain;
+    display: block;
+    background: #f8fafc;
+    border-radius: 5px;
+  }
+  .vga-bank-reference .note {
+    margin-top: 16px;
+    font-size: 19px;
+    line-height: 1.35;
+    color: var(--ink-soft);
+  }
+  .vga-planes-bridge {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: 42px;
+    flex: 1;
+    min-height: 0;
     align-items: stretch;
   }
-  .plane-card {
-    background: white;
-    border-radius: 10px;
-    box-shadow: var(--shadow-card);
-    padding: 20px 14px;
-    text-align: center;
-    position: relative;
-  }
-  .plane-card.off {
-    opacity: 0.56;
-    filter: grayscale(0.65);
-  }
-  .plane-bit {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 10px;
-    border-radius: 8px;
+  .vga-planes-panel {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    font-weight: 800;
-    box-shadow: inset 0 0 0 2px currentColor;
+    flex-direction: column;
+    min-height: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+    border-top: 4px solid var(--blue);
+    padding: 20px 22px 18px;
   }
-  .plane-card.on .plane-bit {
-    background: var(--orange);
-    color: white;
+  .vga-planes-panel.player {
+    border-top-color: #047857;
   }
-  .plane-card.off .plane-bit {
-    background: #f1f5f9;
-    color: #64748b;
-  }
-  .plane-name {
+  .vga-planes-panel h3 {
+    margin: 0 0 14px;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: var(--navy);
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 14px;
   }
-  .plane-column {
+  .vga-planes-panel img {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
+    object-fit: contain;
+    image-rendering: pixelated;
+    background: #f8fafc;
+    border-radius: 5px;
+  }
+  .vga-planes-panel .caption {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 19px;
+    line-height: 1.35;
+    color: var(--ink-soft);
+  }
+  .vga-planes-takeaway {
+    margin-top: 24px;
+    padding: 18px 24px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border-left: 4px solid var(--blue);
+    font-size: 25px;
+    line-height: 1.35;
+  }
+  .vga-planes-takeaway b {
+    color: var(--blue);
+  }
+
+  /* ===== Baked light decision (slide 17) ===== */
+  .axis-choice {
+    width: 660px;
     display: grid;
-    grid-template-rows: repeat(6, 28px);
-    gap: 5px;
-    margin: 0 auto;
-    width: 68px;
+    grid-template-rows: auto 1fr auto;
+    gap: 20px;
+    font-family: var(--font-mono);
   }
-  .plane-column span {
-    border-radius: 3px;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+  .axis-choice .source-label {
+    justify-self: center;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: #fff7d6;
+    border: 2px solid var(--orange);
+    color: #92400e;
+    font-family: var(--font-sans);
+    font-size: 20px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(245,158,11,0.18);
   }
-  .plane-card.off .plane-column span {
-    background: #cbd5e1 !important;
+  .axis-map {
+    position: relative;
+    height: 300px;
+    background:
+      repeating-linear-gradient(90deg, rgba(15,23,42,0.06) 0 1px, transparent 1px 58px),
+      repeating-linear-gradient(0deg, rgba(15,23,42,0.06) 0 1px, transparent 1px 58px),
+      #ffffff;
+    border: 2px solid #dbe3ef;
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
   }
-  .plane-state {
-    margin-top: 16px;
-    font-size: 17px;
-    font-weight: 800;
+  .axis-box {
+    position: absolute;
+    left: 50%;
+    top: 46px;
+    width: 330px;
+    height: 190px;
+    transform: translateX(-50%);
+  }
+  .box-face {
+    position: absolute;
+    top: 42px;
+    width: 165px;
+    height: 148px;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.20);
+  }
+  .box-face.x {
+    left: 0;
+    clip-path: polygon(0 0, 100% 24px, 100% 100%, 0 78%);
+    background: linear-gradient(135deg, #111827, #2b2a44);
+  }
+  .box-face.y {
+    right: 0;
+    clip-path: polygon(0 24px, 100% 0, 100% 78%, 0 100%);
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+  }
+  .box-top {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 330px;
+    height: 68px;
+    clip-path: polygon(50% 0, 100% 42px, 50% 68px, 0 42px);
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    box-shadow: inset 0 0 0 2px rgba(15,23,42,0.08);
+  }
+  .box-edge {
+    position: absolute;
+    left: 50%;
+    top: 64px;
+    width: 3px;
+    height: 126px;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.60);
+    border-radius: 999px;
+  }
+  .map-label {
+    position: absolute;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: var(--navy);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .plane-card.on .plane-state { color: #047857; }
-  .plane-card.off .plane-state { color: #64748b; }
-
-  /* ===== Lit corridor (slide 8) ===== */
-  .corridor-stage {
-    width: 640px; height: 500px;
-    position: relative;
-    transform-style: preserve-3d;
-    perspective: 1100px;
-    perspective-origin: 50% 45%;
+  .map-label.x {
+    left: 120px;
+    top: 122px;
   }
-  .corridor {
-    position: absolute; inset: 0;
-    transform-style: preserve-3d;
-    animation: corrPan 7s ease-in-out infinite alternate;
+  .map-label.y {
+    right: 120px;
+    top: 122px;
+    background: var(--orange);
   }
-  @keyframes corrPan {
-    from { transform: translateZ(-20px) rotateY(-2deg); }
-    to   { transform: translateZ(20px)  rotateY(2deg); }
-  }
-  .corr-wall {
+  .player-dot {
     position: absolute;
-    width: 256px; height: 330px;
-    top: 72px;
-    background-size: 60px 8px, 100% 100%;
-    box-shadow: var(--shadow-deep);
-    border: 2px solid rgba(255,255,255,0.18);
-    z-index: 1;
-  }
-  .corr-wall.left {
-    left: 58px;
-    transform: rotateY(55deg);
-    transform-origin: left center;
-    background:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 30px),
-      linear-gradient(90deg, #111827, #25243d);
-  }
-  .corr-wall.right {
-    right: 58px;
-    transform: rotateY(-55deg);
-    transform-origin: right center;
-    background:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.16) 0 1px, transparent 1px 30px),
-      linear-gradient(90deg, #c76a04, #f59e0b);
-  }
-  .corr-wall.back {
-    left: 50%; top: 72px;
-    width: 230px;
-    transform: translateX(-50%) translateZ(-210px);
-    background:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 30px),
-      linear-gradient(180deg, #2d2d44, #151525);
-  }
-  .corr-wall::after {
-    content: attr(data-label);
-    position: absolute;
-    left: 18px; top: 18px;
-    background: rgba(15,23,42,0.88);
-    color: white;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-family: var(--font-sans);
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    box-shadow: var(--shadow-card);
-  }
-  .corr-wall.right::after {
-    background: rgba(180,83,9,0.92);
-  }
-  .corr-floor {
-    position: absolute;
-    left: 58px; right: 58px; bottom: 0;
-    height: 155px;
-    background:
-      repeating-linear-gradient(90deg, rgba(15,23,42,0.06) 0 2px, transparent 2px 60px),
-      linear-gradient(180deg, #9aaabb, #c8d4de);
-    transform: rotateX(60deg);
-    transform-origin: bottom center;
-    border: 0;
-    box-shadow: 0 20px 38px rgba(15,23,42,0.10);
-    z-index: 0;
-  }
-  .light-beam {
-    position: absolute;
-    top: 0; left: 50%;
-    width: 2px; height: 0;
+    left: 50%;
+    bottom: 18px;
+    width: 26px;
+    height: 26px;
     transform: translateX(-50%);
+    border-radius: 50%;
+    background: var(--blue);
+    border: 4px solid white;
+    box-shadow: 0 10px 22px rgba(37,99,235,0.24);
   }
-  .axis-tag {
+  .player-dot::after {
+    content: 'raio';
     position: absolute;
-    font-family: var(--font-sans);
-    font-size: 20px;
+    left: 50%;
+    top: 34px;
+    transform: translateX(-50%);
+    color: var(--blue);
+    font-size: 14px;
     font-weight: 700;
-    padding: 10px 14px;
-    border-radius: 8px;
-    color: white;
-    box-shadow: var(--shadow-card);
-    z-index: 6;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
-  .axis-tag.x { left: 92px; bottom: 18px; background: var(--navy); }
-  .axis-tag.y { right: 92px; bottom: 18px; background: var(--orange); }
-  .axis-ray {
+  .hit-line {
     position: absolute;
-    left: 50%; top: 238px;
-    width: 210px; height: 6px;
+    left: 50%;
+    bottom: 37px;
+    width: 126px;
+    height: 5px;
     transform-origin: left center;
     border-radius: 999px;
-    opacity: 0.9;
-    z-index: 4;
   }
-  .axis-ray::after {
+  .hit-line::after {
     content: '';
     position: absolute;
-    right: -10px; top: -7px;
+    right: -10px;
+    top: -7px;
     border-left: 16px solid currentColor;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
   }
-  .axis-ray.x {
-    color: #1a1a2e;
-    background: linear-gradient(90deg, #1a1a2e, rgba(26,26,46,0.15));
-    transform: rotateZ(160deg);
-    animation: axisPulseX 4.8s ease-in-out infinite;
+  .hit-line.x {
+    color: var(--navy);
+    background: var(--navy);
+    transform: rotate(-138deg);
   }
-  .axis-ray.y {
-    color: #f59e0b;
-    background: linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.15));
-    transform: rotateZ(20deg);
-    animation: axisPulseY 4.8s ease-in-out infinite;
+  .hit-line.y {
+    color: var(--orange);
+    background: var(--orange);
+    transform: rotate(-42deg);
   }
-  .light-source {
+  .hit-point {
     position: absolute;
-    left: 50%;
-    top: 24px;
-    transform: translateX(-50%);
-    background: #fff7d6;
-    border: 2px solid #f59e0b;
-    color: #92400e;
-    border-radius: 999px;
-    padding: 10px 18px;
-    font-family: var(--font-sans);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: var(--shadow-card);
+  }
+  .hit-point.x {
+    left: 240px;
+    top: 149px;
+    background: var(--navy);
+  }
+  .hit-point.y {
+    right: 240px;
+    top: 149px;
+    background: var(--orange);
+  }
+  .axis-result {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .axis-result-card {
+    padding: 18px 20px;
+    border-radius: 8px;
+    background: white;
+    box-shadow: var(--shadow-card);
+    border-left: 5px solid var(--navy);
+    color: var(--ink);
+    font-size: 20px;
+    line-height: 1.35;
+  }
+  .axis-result-card.y {
+    border-left-color: var(--orange);
+  }
+  .axis-result-card b {
+    display: block;
+    margin-top: 4px;
+    color: var(--navy);
+    font-size: 28px;
+  }
+  .axis-result-card.y b {
+    color: #b45309;
+  }
+  .axis-result-card .condition {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #eef2ff;
+    color: var(--blue);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .axis-note {
+    justify-self: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border-left: 4px solid var(--blue);
+    color: var(--ink);
     font-size: 18px;
     font-weight: 700;
-    box-shadow: 0 10px 24px rgba(245,158,11,0.20);
-    z-index: 8;
-  }
-  @keyframes axisPulseX {
-    0%, 38%, 100% { opacity: 0.20; }
-    12%, 28% { opacity: 1; }
-  }
-  @keyframes axisPulseY {
-    0%, 46%, 100% { opacity: 0.20; }
-    62%, 84% { opacity: 1; }
   }
 
   /* ===== Sliding door tile (slide 19) ===== */
@@ -2000,7 +2071,7 @@
   <!-- SLIDE 1 — Capa -->
   <!-- ============================================================ -->
   <section data-label="01 Capa" class="cover">
-    <div class="slide-num">01 / 23</div>
+    <div class="slide-num">01 / 24</div>
     <p class="eyebrow">Black Book 4.7 · Raycasting do Wolfenstein 3D</p>
     <div class="stage-3d">
       <div class="cube">
@@ -2021,7 +2092,7 @@
   <!-- SLIDE 2 — Fisheye (conceito + 3D + figura 4.53) -->
   <!-- ============================================================ -->
   <section data-label="02 Fisheye">
-    <div class="slide-num">02 / 23</div>
+    <div class="slide-num">02 / 24</div>
     <p class="eyebrow">4.7.6 · Distância direta d vs distância projetada z</p>
     <h1 class="title">Correção do Efeito Fisheye</h1>
     <div class="body-grid">
@@ -2068,7 +2139,7 @@
   <!-- SLIDE 2b — Figura 4.53 grande -->
   <!-- ============================================================ -->
   <section data-label="03 Map → Player Space">
-    <div class="slide-num">03 / 23</div>
+    <div class="slide-num">03 / 24</div>
     <p class="eyebrow">Figura 4.53 · Transformar coordenadas para o eixo do jogador</p>
     <h1 class="title" style="margin-bottom: 34px;">Map Space → Player Space</h1>
     <div style="display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 42px; flex: 1; align-items: start;">
@@ -2122,7 +2193,7 @@
   <!-- SLIDE 2c — Antes vs Depois (cena 1) -->
   <!-- ============================================================ -->
   <section data-label="04 Comparativo Cena 1">
-    <div class="slide-num">04 / 23</div>
+    <div class="slide-num">04 / 24</div>
     <p class="eyebrow">Comparativo · Parede longa revela distorção nas bordas</p>
     <h1 class="title">Antes &amp; Depois — Parede Longa</h1>
     <div class="compare-grid">
@@ -2144,7 +2215,7 @@
   <!-- SLIDE 2d — Antes vs Depois (cena 2) -->
   <!-- ============================================================ -->
   <section data-label="05 Comparativo Cena 2">
-    <div class="slide-num">05 / 23</div>
+    <div class="slide-num">05 / 24</div>
     <p class="eyebrow">Comparativo · Porta central expõe erro de perspectiva</p>
     <h1 class="title">Antes &amp; Depois — Porta ao Centro</h1>
     <div class="compare-grid">
@@ -2166,7 +2237,7 @@
   <!-- SLIDE 3 — Desenhando paredes -->
   <!-- ============================================================ -->
   <section data-label="06 Paredes">
-    <div class="slide-num">06 / 23</div>
+    <div class="slide-num">06 / 24</div>
     <p class="eyebrow">4.7.7 · Cada coluna da parede vira texel escalado</p>
     <h1 class="title">Desenhando Paredes em um 386</h1>
     <div class="body-grid flip">
@@ -2225,7 +2296,7 @@
   <!-- SLIDE 4 — Compiled scalers -->
   <!-- ============================================================ -->
   <section data-label="07 Compiled Scalers">
-    <div class="slide-num">07 / 23</div>
+    <div class="slide-num">07 / 24</div>
     <p class="eyebrow">4.7.7.1 · Trocar cálculo por scalers pré-compilados</p>
     <h1 class="title">Compiled Scalers</h1>
     <div class="body-grid">
@@ -2292,7 +2363,7 @@
   <!-- SLIDE 8 — Compiled Scalers · onde isso aparece em cena -->
   <!-- ============================================================ -->
   <section data-label="08 Scalers em Cena">
-    <div class="slide-num">08 / 23</div>
+    <div class="slide-num">08 / 24</div>
     <p class="eyebrow">4.7.7.1 · Um scaler pronto para cada altura de coluna</p>
     <h1 class="title">Cada Coluna, um Scaler Pronto</h1>
     <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 56px; flex: 1; align-items: center;">
@@ -2321,7 +2392,7 @@
   <!-- SLIDE 9 — Compiled Scalers · código C/x86 -->
   <!-- ============================================================ -->
   <section data-label="09 Scalers no Código">
-    <div class="slide-num">09 / 23</div>
+    <div class="slide-num">09 / 24</div>
     <p class="eyebrow">4.7.7.1 · Loop genérico substituído por bytes x86 emitidos</p>
     <h1 class="title">Do Loop Genérico ao x86 Compilado</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0;">
@@ -2363,7 +2434,7 @@
   <!-- SLIDE 5 — Tradeoff -->
   <!-- ============================================================ -->
   <section data-label="10 RAM vs CPU">
-    <div class="slide-num">10 / 23</div>
+    <div class="slide-num">10 / 24</div>
     <p class="eyebrow">4.7.7.1 · Gastar RAM para economizar instruções por pixel</p>
     <h1 class="title">RAM vs CPU — O Tradeoff Clássico</h1>
     <div class="body-grid flip">
@@ -2417,7 +2488,7 @@
   <!-- SLIDE 11 — Deferred column drawing · CONCEITO -->
   <!-- ============================================================ -->
   <section data-label="11 Deferred Drawing">
-    <div class="slide-num">11 / 23</div>
+    <div class="slide-num">11 / 24</div>
     <p class="eyebrow">4.7.7.2 · Adiar colunas para desenhar em lotes</p>
     <h1 class="title">Deferred Column Drawing</h1>
     <div class="body-grid">
@@ -2473,10 +2544,35 @@
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 12 — Deferred · pseudocódigo antes/depois -->
+  <!-- SLIDE 12 — Ponte visual: 4 planos VGA vs frame final -->
   <!-- ============================================================ -->
-  <section data-label="12 Buffer vs Direto">
-    <div class="slide-num">12 / 23</div>
+  <section data-label="12 VGA Planos vs Tela">
+    <div class="slide-num">12 / 24</div>
+    <p class="eyebrow">4.7.7.2 · O renderer pensa em planos, o jogador vê uma tela contínua</p>
+    <h1 class="title" style="margin-bottom: 32px;">Quatro Planos, Um Frame</h1>
+    <div class="vga-planes-bridge">
+      <div class="vga-planes-panel">
+        <h3>Como o renderer organiza</h3>
+        <img src="images/vga-renderizado-banks.png" alt="cena separada em quatro planos VGA" />
+        <div class="caption">Cada faixa representa um plano VGA: colunas 0,4,8… em um bank; 1,5,9… em outro.</div>
+      </div>
+      <div class="vga-planes-panel player">
+        <h3>Como o jogador recebe</h3>
+        <img src="images/vga-mostrado-jogador.png" alt="frame final contínuo mostrado ao jogador" />
+        <div class="caption">No scanout, os quatro planos são intercalados e aparecem como uma imagem normal.</div>
+      </div>
+    </div>
+    <div class="vga-planes-takeaway">
+      <b>A vantagem:</b> o engine agrupa colunas para escrever nos planos VGA, mas o resultado final continua sendo um frame único.
+    </div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>12</span></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 13 — Deferred · pseudocódigo antes/depois -->
+  <!-- ============================================================ -->
+  <section data-label="13 Buffer vs Direto">
+    <div class="slide-num">13 / 24</div>
     <p class="eyebrow">4.7.7.2 · Agrupar colunas antes de chamar o renderer</p>
     <h1 class="title">Bufferizar Antes de Desenhar</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0;">
@@ -2507,61 +2603,23 @@
         <div style="font-family: var(--font-mono); font-size: 18px; color: #047857;">▸ <b>~½ das escritas</b> — colunas vizinhas viram <b>uma</b></div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>12</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>13</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 13 — VGA banks (com 3D + ScalePost no quadro) -->
+  <!-- SLIDE 14 — VGA banks (com 3D + ScalePost no quadro) -->
   <!-- ============================================================ -->
-  <section data-label="13 VGA Banks">
-    <div class="slide-num">13 / 23</div>
+  <section data-label="14 VGA Banks">
+    <div class="slide-num">14 / 24</div>
     <p class="eyebrow">4.7.7.2 · Máscaras VGA controlam quais pixels são escritos</p>
     <h1 class="title">VGA Plane Masking</h1>
     <div class="body-grid flip">
       <div class="stage-3d">
         <div class="banks-stage">
-          <div class="mask-title">Exemplo didático: máscara <b>1011</b></div>
-          <div class="plane-mask-board">
-            <div class="plane-card on">
-              <div class="plane-bit">1</div>
-              <div class="plane-name">Bank 0<br/>cols 0,4,8…</div>
-              <div class="plane-column">
-                <span style="background:#ef4444"></span><span style="background:#ef4444"></span>
-                <span style="background:#ef4444"></span><span style="background:#ef4444"></span>
-                <span style="background:#ef4444"></span><span style="background:#ef4444"></span>
-              </div>
-              <div class="plane-state">escreve</div>
-            </div>
-            <div class="plane-card off">
-              <div class="plane-bit">0</div>
-              <div class="plane-name">Bank 1<br/>cols 1,5,9…</div>
-              <div class="plane-column">
-                <span style="background:#f59e0b"></span><span style="background:#f59e0b"></span>
-                <span style="background:#f59e0b"></span><span style="background:#f59e0b"></span>
-                <span style="background:#f59e0b"></span><span style="background:#f59e0b"></span>
-              </div>
-              <div class="plane-state">preserva</div>
-            </div>
-            <div class="plane-card on">
-              <div class="plane-bit">1</div>
-              <div class="plane-name">Bank 2<br/>cols 2,6,10…</div>
-              <div class="plane-column">
-                <span style="background:#10b981"></span><span style="background:#10b981"></span>
-                <span style="background:#10b981"></span><span style="background:#10b981"></span>
-                <span style="background:#10b981"></span><span style="background:#10b981"></span>
-              </div>
-              <div class="plane-state">escreve</div>
-            </div>
-            <div class="plane-card on">
-              <div class="plane-bit">1</div>
-              <div class="plane-name">Bank 3<br/>cols 3,7,11…</div>
-              <div class="plane-column">
-                <span style="background:#2563eb"></span><span style="background:#2563eb"></span>
-                <span style="background:#2563eb"></span><span style="background:#2563eb"></span>
-                <span style="background:#2563eb"></span><span style="background:#2563eb"></span>
-              </div>
-              <div class="plane-state">escreve</div>
-            </div>
+          <div class="vga-bank-reference">
+            <div class="label">colunas intercaladas na memória</div>
+            <img src="images/vga-bank-layout.png" alt="quatro banks VGA formando pixels intercalados no frame" />
+            <div class="note">Bank 0 escreve 0,4,8…; Bank 1 escreve 1,5,9…</div>
           </div>
         </div>
       </div>
@@ -2586,14 +2644,14 @@ asm call DWORD PTR [bp]
 <span style="color:#94a3b8;">// pass 3 idem...</span></pre>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>13</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>14</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 14 — mapmasks: lookup pré-calculado (3 imagens) -->
+  <!-- SLIDE 15 — mapmasks: lookup pré-calculado (3 imagens) -->
   <!-- ============================================================ -->
-  <section data-label="14 mapmasks Lookup">
-    <div class="slide-num">14 / 23</div>
+  <section data-label="15 mapmasks Lookup">
+    <div class="slide-num">15 / 24</div>
     <p class="eyebrow">4.7.7.2 · mapmasks decide 1, 2 ou 3 passes</p>
     <h1 class="title">Quantos Passes? Depende do Alinhamento</h1>
     <div class="mapmask-grid">
@@ -2626,14 +2684,14 @@ asm call DWORD PTR [bp]
       <span class="label">IDEIA</span>
       <span>o engine já sabe qual máscara usar para cada alinhamento — <b style="color:#fcd34d;">sem calcular no meio do frame</b></span>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>14</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>15</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 15 — Resultado: 50% das escritas evitadas -->
+  <!-- SLIDE 16 — Resultado: 50% das escritas evitadas -->
   <!-- ============================================================ -->
-  <section data-label="15 50% Escritas Evitadas">
-    <div class="slide-num">15 / 23</div>
+  <section data-label="16 50% Escritas Evitadas">
+    <div class="slide-num">16 / 24</div>
     <p class="eyebrow">4.7.7.2 · Escritas em rosa são puladas pelo renderer</p>
     <h1 class="title" style="margin-bottom: 28px;">Tudo em <span style="color: #d946ef;">rosa</span> é uma escrita evitada</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px; align-items: stretch;">
@@ -2672,14 +2730,14 @@ asm call DWORD PTR [bp]
         <div style="font-family: var(--font-mono); font-size: 18px; line-height: 1.35;">"low detail mode" duplica colunas (160→320) usando o mesmo truque do VGA para rodar em 386</div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>15</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>16</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 8 — Baked light texturing -->
+  <!-- SLIDE 17 — Baked light texturing -->
   <!-- ============================================================ -->
-  <section data-label="16 Baked Light">
-    <div class="slide-num">16 / 23</div>
+  <section data-label="17 Baked Light">
+    <div class="slide-num">17 / 24</div>
     <p class="eyebrow">4.7.7.3 · Luz simulada escolhendo textura X ou Y</p>
     <h1 class="title">Baked Light Texturing</h1>
     <div class="body-grid">
@@ -2700,28 +2758,45 @@ asm call DWORD PTR [bp]
         </div>
       </div>
       <div class="stage-3d">
-        <div class="corridor-stage">
-          <div class="light-source">luz baked na arte</div>
-          <div class="corridor">
-            <div class="corr-wall back" data-label="fundo"></div>
-            <div class="corr-wall left" data-label="X · unlit"></div>
-            <div class="corr-wall right" data-label="Y · lit"></div>
-            <div class="axis-ray x"></div>
-            <div class="axis-ray y"></div>
-            <div class="axis-tag x">eixo X · escuro</div>
-            <div class="axis-tag y">eixo Y · claro</div>
+        <div class="axis-choice">
+          <div class="source-label">luz já vem pintada na textura</div>
+          <div class="axis-map">
+            <div class="axis-box">
+              <div class="box-top"></div>
+              <div class="box-face x"></div>
+              <div class="box-face y"></div>
+              <div class="box-edge"></div>
+            </div>
+            <div class="map-label x">face X</div>
+            <div class="map-label y">face Y</div>
+            <div class="hit-line x"></div>
+            <div class="hit-line y"></div>
+            <div class="hit-point x"></div>
+            <div class="hit-point y"></div>
+            <div class="player-dot"></div>
           </div>
+          <div class="axis-result">
+            <div class="axis-result-card">
+              <span class="condition">hit_axis == X</span>
+              <b>unlit</b>
+            </div>
+            <div class="axis-result-card y">
+              <span class="condition">hit_axis == Y</span>
+              <b>lit</b>
+            </div>
+          </div>
+          <div class="axis-note">O DDA já sabe o eixo atingido; o renderer só escolhe a versão da textura.</div>
         </div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>16</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>17</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 17 — As duas texturas (lit/unlit) -->
+  <!-- SLIDE 18 — As duas texturas (lit/unlit) -->
   <!-- ============================================================ -->
-  <section data-label="17 Lit vs Unlit">
-    <div class="slide-num">17 / 23</div>
+  <section data-label="18 Lit vs Unlit">
+    <div class="slide-num">18 / 24</div>
     <p class="eyebrow">4.7.7.3 · Figura 4.55 — versão lit e unlit por textura</p>
     <h1 class="title">Uma Textura, Duas Versões</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 48px; flex: 1; align-items: center;">
@@ -2747,14 +2822,14 @@ asm call DWORD PTR [bp]
         </div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>17</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>18</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 18 — Resultado em cena (com/sem baked) -->
+  <!-- SLIDE 19 — Resultado em cena (com/sem baked) -->
   <!-- ============================================================ -->
-  <section data-label="18 Cena com vs sem baked">
-    <div class="slide-num">18 / 23</div>
+  <section data-label="19 Cena com vs sem baked">
+    <div class="slide-num">19 / 24</div>
     <p class="eyebrow">4.7.7.3 · Figura 4.56 — baked lighting muda a leitura da cena</p>
     <h1 class="title">Sem &amp; Com Baked Lighting</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; flex: 1; align-items: center;">
@@ -2783,14 +2858,14 @@ asm call DWORD PTR [bp]
         <div style="font-family: var(--font-mono); font-size: 16px; line-height: 1.3;">Trocar trabalho de runtime por trabalho de <b style="color:#fcd34d;">artista</b></div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>18</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>19</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 19 — Doors & push walls overview -->
+  <!-- SLIDE 20 — Doors & push walls overview -->
   <!-- ============================================================ -->
-  <section data-label="19 Portas e Push Walls">
-    <div class="slide-num">19 / 23</div>
+  <section data-label="20 Portas e Push Walls">
+    <div class="slide-num">20 / 24</div>
     <p class="eyebrow">4.7.7.4 · Porta deixa o tile parcialmente atravessável</p>
     <h1 class="title">O Tile Deixa de Ser Binário</h1>
     <div class="body-grid flip">
@@ -2832,14 +2907,14 @@ asm call DWORD PTR [bp]
         </div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>19</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>20</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 20 — Door in scene -->
+  <!-- SLIDE 21 — Door in scene -->
   <!-- ============================================================ -->
-  <section data-label="20 Porta em Cena">
-    <div class="slide-num">20 / 23</div>
+  <section data-label="21 Porta em Cena">
+    <div class="slide-num">21 / 24</div>
     <p class="eyebrow">4.7.7.4 · Face móvel da porta ajusta a colisão do raio</p>
     <h1 class="title" style="margin-bottom: 34px;">A Porta Parece 3D, Mas É Um Caso do Raycaster</h1>
     <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; flex: 1; align-items: start;">
@@ -2872,14 +2947,14 @@ asm call DWORD PTR [bp]
         </div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>20</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>21</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 21 — Doorposition test -->
+  <!-- SLIDE 22 — Doorposition test -->
   <!-- ============================================================ -->
-  <section data-label="21 Teste doorposition">
-    <div class="slide-num">21 / 23</div>
+  <section data-label="22 Teste doorposition">
+    <div class="slide-num">22 / 24</div>
     <p class="eyebrow">4.7.7.4 · Figura 4.57 — doorposition decide colisão</p>
     <h1 class="title" style="margin-bottom: 34px;">O Teste Que Decide: Bate ou Atravessa?</h1>
     <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; flex: 1; align-items: start;">
@@ -2916,14 +2991,14 @@ asm call DWORD PTR [bp]
         </div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>21</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>22</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 22 — Door code and intercept -->
+  <!-- SLIDE 23 — Door code and intercept -->
   <!-- ============================================================ -->
-  <section data-label="22 Porta no Código">
-    <div class="slide-num">22 / 23</div>
+  <section data-label="23 Porta no Código">
+    <div class="slide-num">23 / 24</div>
     <p class="eyebrow">4.7.7.4 · Estado da porta vira intercept para desenhar a coluna</p>
     <h1 class="title">A Porta É Estado + Um Intercept Ajustado</h1>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 42px; flex: 1; align-items: stretch;">
@@ -2962,14 +3037,14 @@ asm call DWORD PTR [bp]
         </ul>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>22</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>23</span></div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- SLIDE 23 — Push walls -->
+  <!-- SLIDE 24 — Push walls -->
   <!-- ============================================================ -->
-  <section data-label="23 Push Walls">
-    <div class="slide-num">23 / 23</div>
+  <section data-label="24 Push Walls">
+    <div class="slide-num">24 / 24</div>
     <p class="eyebrow">4.7.7.5 · Push wall desloca a face antes do teste do raio</p>
     <h1 class="title">Push Walls: A Mesma Ideia, Com Offset</h1>
     <div class="body-grid flip">
@@ -3020,7 +3095,7 @@ asm call DWORD PTR [bp]
         </div>
       </div>
     </div>
-    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>23</span></div>
+    <div class="footer-bar"><span>Wolfenstein 3D · Renderizador</span><span class="rule"></span><span>24</span></div>
   </section>
 
 </deck-stage>
