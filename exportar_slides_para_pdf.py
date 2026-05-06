@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import platform
 import re
 import shutil
 import sys
@@ -19,14 +20,54 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 
-DEFAULT_BROWSER_PATHS = {
+def default_browser_paths() -> dict[str, list[Path]]:
+    system = platform.system().lower()
+
+    if system == "windows":
+        return {
+            "chrome": [
+                Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe"),
+                Path(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"),
+            ],
+            "edge": [
+                Path(r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"),
+                Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"),
+            ],
+        }
+
+    if system == "darwin":
+        return {
+            "chrome": [Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")],
+            "edge": [Path("/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge")],
+        }
+
+    return {
+        "chrome": [
+            Path("/usr/bin/google-chrome"),
+            Path("/usr/bin/google-chrome-stable"),
+            Path("/usr/bin/chromium-browser"),
+            Path("/usr/bin/chromium"),
+            Path("/snap/bin/chromium"),
+        ],
+        "edge": [
+            Path("/usr/bin/microsoft-edge"),
+            Path("/usr/bin/microsoft-edge-stable"),
+        ],
+    }
+
+
+DEFAULT_BROWSER_PATHS = default_browser_paths()
+
+DEFAULT_BROWSER_EXECUTABLES = {
     "chrome": [
-        Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe"),
-        Path(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"),
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium-browser",
+        "chromium",
     ],
     "edge": [
-        Path(r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"),
-        Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"),
+        "microsoft-edge",
+        "microsoft-edge-stable",
     ],
 }
 
@@ -139,6 +180,10 @@ def resolve_browser(browser_name: str, browser_binary: Path | None) -> tuple[str
         for candidate_path in DEFAULT_BROWSER_PATHS[candidate_name]:
             if candidate_path.exists():
                 return candidate_name, candidate_path
+        for executable_name in DEFAULT_BROWSER_EXECUTABLES[candidate_name]:
+            resolved = shutil.which(executable_name)
+            if resolved:
+                return candidate_name, Path(resolved)
 
     raise FileNotFoundError(
         "Nao encontrei Chrome ou Edge instalados. "

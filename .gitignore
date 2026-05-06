@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Artefatos gerados na exportação
+_slides_exportados/
+slides-exportados.pdf
+capitulo1.txt
+WolfsteinBlackBook.pdf
+prompt_slides.md
+
+# Imagens exportadas por scripts
+imagens_cap1/
