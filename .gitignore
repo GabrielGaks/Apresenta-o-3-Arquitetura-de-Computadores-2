@@ -1,4 +1,9 @@
-# Mantem no Git apenas estes dois arquivos
+# Mantem no Git apenas os arquivos essenciais da apresentação
 *
 !index.html
 !.gitignore
+!deck-stage.js
+!images/
+!images/**
+!Figure 4.57 A ray traversing a partially opened door.png
+!foto da porta.png
