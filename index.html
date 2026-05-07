@@ -1917,8 +1917,18 @@
     width: 620px;
     height: 460px;
     position: relative;
-    transform-style: preserve-3d;
-    perspective: 900px;
+    background: #0f172a;
+    border-radius: 12px;
+    box-shadow: var(--shadow-deep);
+    overflow: hidden;
+    border: 4px solid rgba(37,99,235,0.25);
+  }
+  .push-stage video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    background: #0f172a;
   }
   .push-wrap{
     display: flex;
@@ -2835,12 +2845,12 @@ asm call DWORD PTR [bp]
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; flex: 1; align-items: center;">
       <div style="display: flex; flex-direction: column; gap: 16px;">
         <div style="font-family: var(--font-mono); font-size: 24px; color: #b91c1c; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✗ sem baked · tudo lit</div>
-        <img src="images/scene-no-baked.png" alt="cena sem baked lighting" style="width: 100%; aspect-ratio: 5/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
+        <img src="images/scene-baked.png" alt="cena sem baked lighting" style="width: 100%; aspect-ratio: 5/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #fca5a5;" />
         <div style="font-size: 22px; color: var(--ink-soft); line-height: 1.4;">Paredes parecem <b>chapadas</b> — difícil distinguir cantos e profundidade</div>
       </div>
       <div style="display: flex; flex-direction: column; gap: 16px;">
         <div style="font-family: var(--font-mono); font-size: 24px; color: #047857; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">✓ com baked · X escuro / Y claro</div>
-        <img src="images/scene-baked.png" alt="cena com baked lighting" style="width: 100%; aspect-ratio: 5/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
+        <img src="images/scene-no-baked.png" alt="cena com baked lighting" style="width: 100%; aspect-ratio: 5/3; object-fit: cover; image-rendering: pixelated; border-radius: 12px; box-shadow: var(--shadow-deep); border: 4px solid #6ee7b7;" />
         <div style="font-size: 22px; color: var(--ink-soft); line-height: 1.4;">Cantos saltam à vista — a cena ganha <b>volume</b> e leitura espacial</div>
       </div>
     </div>
@@ -3051,11 +3061,7 @@ asm call DWORD PTR [bp]
       <div class="stage-3d">
         <div class="push-wrap">
           <div class="push-stage">
-            <div class="push-room">
-              <div class="push-grid"></div>
-              <div class="push-block"></div>
-            </div>
-            <div class="push-ray"></div>
+            <video src="images/push-wall-demo.mp4" autoplay muted loop playsinline controls preload="metadata"></video>
           </div>
           <div class="push-caption" aria-label="Legenda do exemplo">
             <div class="t">Push wall: a face “anda” dentro do tile</div>
